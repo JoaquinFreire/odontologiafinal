@@ -1,38 +1,35 @@
 /* eslint-disable no-unused-vars */
 
-import { supabase } from '../config/supabaseClient';
-import { getStartOfTodayUTC, getEndOfTodayUTC } from '../utils/dateUtils';
+const API_BASE_URL = 'http://localhost:3000/api';
+
+// Función helper para obtener headers con token
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('auth_token');
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+  };
+};
 
 export const appointmentService = {
   // Obtener turnos de hoy del usuario actual
-  getTodayAppointments: async (userId) => {
+  getTodayAppointments: async () => {
     try {
       console.log('=== OBTENIENDO TURNOS DE HOY ===');
-      console.log('User ID:', userId);
       
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(startOfDay);
-      endOfDay.setDate(endOfDay.getDate() + 1);
-      endOfDay.setMilliseconds(-1);
+      const response = await fetch(`${API_BASE_URL}/appointments/today`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
 
-      console.log('Fecha inicio:', startOfDay.toISOString());
-      console.log('Fecha fin:', endOfDay.toISOString());
+      if (!response.ok) {
+        throw new Error('Error obteniendo turnos de hoy');
+      }
 
-      const { data, error } = await supabase
-        .from('shift')
-        .select('*')
-        .eq('user_id', userId)
-        .gte('datetime', startOfDay.toISOString())
-        .lt('datetime', endOfDay.toISOString())
-        .eq('status', false)
-        .order('datetime', { ascending: true });
-
-      console.log('Query error:', error);
+      const data = await response.json();
       console.log('Today appointments:', data);
 
-      if (error) throw new Error(error.message);
-      return data || [];
+      return data;
     } catch (error) {
       console.error('Error obteniendo turnos de hoy:', error);
       return [];
@@ -40,29 +37,23 @@ export const appointmentService = {
   },
 
   // Obtener turnos atrasados del usuario actual
-  getOverdueAppointments: async (userId) => {
+  getOverdueAppointments: async () => {
     try {
       console.log('=== OBTENIENDO TURNOS ATRASADOS ===');
-      console.log('User ID:', userId);
       
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
+      const response = await fetch(`${API_BASE_URL}/appointments/overdue`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
 
-      console.log('Fecha límite:', startOfDay.toISOString());
+      if (!response.ok) {
+        throw new Error('Error obteniendo turnos atrasados');
+      }
 
-      const { data, error } = await supabase
-        .from('shift')
-        .select('*')
-        .eq('user_id', userId)
-        .lt('datetime', startOfDay.toISOString())
-        .eq('status', false)
-        .order('datetime', { ascending: false });
-
-      console.log('Query error:', error);
+      const data = await response.json();
       console.log('Overdue appointments:', data);
 
-      if (error) throw new Error(error.message);
-      return data || [];
+      return data;
     } catch (error) {
       console.error('Error obteniendo turnos atrasados:', error);
       return [];
@@ -70,22 +61,23 @@ export const appointmentService = {
   },
 
   // Obtener total de turnos pendientes del usuario actual
-  getTotalPendingAppointments: async (userId) => {
+  getTotalPendingAppointments: async () => {
     try {
       console.log('=== OBTENIENDO TOTAL DE TURNOS PENDIENTES ===');
-      console.log('User ID:', userId);
 
-      const { count, error } = await supabase
-        .from('shift')
-        .select('*', { count: 'exact' })
-        .eq('user_id', userId) // ← Filtrar por usuario
-        .eq('status', false);
+      const response = await fetch(`${API_BASE_URL}/appointments/pending/total`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
 
-      console.log('Query error:', error);
-      console.log('Total pending:', count);
+      if (!response.ok) {
+        throw new Error('Error obteniendo total de turnos pendientes');
+      }
 
-      if (error) throw new Error(error.message);
-      return count || 0;
+      const data = await response.json();
+      console.log('Total pending:', data);
+
+      return data;
     } catch (error) {
       console.error('Error obteniendo total de turnos pendientes:', error);
       return 0;
@@ -93,25 +85,24 @@ export const appointmentService = {
   },
 
   // Marcar turno como atendido
-  markAppointmentAsCompleted: async (id, userId) => {
+  markAppointmentAsCompleted: async (id) => {
     try {
       console.log('=== MARCANDO TURNO COMO ATENDIDO ===');
       console.log('ID:', id);
-      console.log('User ID:', userId);
 
-      const { data, error } = await supabase
-        .from('shift')
-        .update({ status: true })
-        .eq('id', id)
-        .eq('user_id', userId) // ← Verificar que pertenece al usuario
-        .select();
+      const response = await fetch(`${API_BASE_URL}/appointments/${id}/complete`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+      });
 
-      console.log('Update error:', error);
+      if (!response.ok) {
+        throw new Error('Error marcando turno como completado');
+      }
+
+      const data = await response.json();
       console.log('Updated appointment:', data);
 
-      if (error) throw new Error(error.message);
-      console.log('=== TURNO MARCADO COMO ATENDIDO ===');
-      return data[0];
+      return data;
     } catch (error) {
       console.error('Error marcando turno como atendido:', error);
       throw error;
@@ -119,40 +110,25 @@ export const appointmentService = {
   },
 
   // Crear turno con user_id del usuario logueado
-  createAppointment: async (appointmentData, userId) => {
+  createAppointment: async (appointmentData) => {
     try {
       console.log('=== CREANDO TURNO ===');
       console.log('Datos del turno:', appointmentData);
-      console.log('User ID:', userId);
 
-      const datetime = `${appointmentData.date} ${appointmentData.time}:00`;
+      const response = await fetch(`${API_BASE_URL}/appointments`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(appointmentData),
+      });
 
-      console.log('DateTime formateado:', datetime);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al crear turno');
+      }
 
-      const dataToInsert = {
-        name: appointmentData.name,
-        datetime: datetime,
-        dni: appointmentData.dni || null,
-        type: appointmentData.type,
-        status: false,
-        user_id: userId // ← Agregar user_id
-      };
-
-      console.log('Datos a insertar:', dataToInsert);
-
-      const { data, error } = await supabase
-        .from('shift')
-        .insert([dataToInsert])
-        .select();
-
-      console.log('Insert error:', error);
-      console.log('Insert data:', data);
-
-      if (error) throw new Error(error.message || 'Error al crear turno');
-
-      console.log('=== TURNO CREADO EXITOSAMENTE ===');
-      console.log('Turno data:', data);
-      return data[0];
+      const data = await response.json();
+      console.log('Turno creado:', data);
+      return data;
     } catch (error) {
       console.error('=== ERROR EN createAppointment ===');
       console.error('Error completo:', error);
@@ -161,23 +137,23 @@ export const appointmentService = {
   },
 
   // Obtener todos los turnos pendientes del usuario (para filtrar en frontend)
-  getAllPendingAppointments: async (userId) => {
+  getAllPendingAppointments: async () => {
     try {
       console.log('=== OBTENIENDO TODOS LOS TURNOS PENDIENTES ===');
-      console.log('User ID:', userId);
 
-      const { data, error } = await supabase
-        .from('shift')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('status', false)
-        .order('datetime', { ascending: true });
+      const response = await fetch(`${API_BASE_URL}/appointments/pending`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
 
-      console.log('Query error:', error);
+      if (!response.ok) {
+        throw new Error('Error obteniendo turnos pendientes');
+      }
+
+      const data = await response.json();
       console.log('All pending appointments:', data);
 
-      if (error) throw new Error(error.message);
-      return data || [];
+      return data;
     } catch (error) {
       console.error('Error obteniendo turnos pendientes:', error);
       return [];
@@ -185,28 +161,12 @@ export const appointmentService = {
   },
 
   // Obtener turnos del usuario actual (solo pendientes, desde hoy en adelante)
-  getAppointments: async (userId) => {
+  getAppointments: async () => {
     try {
       console.log('=== OBTENIENDO TURNOS ===');
-      console.log('User ID:', userId);
 
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
-
-      // ✅ Solo traer turnos pendientes (status: false) a partir de hoy
-      const { data, error } = await supabase
-        .from('shift')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('status', false) // ← Solo pendientes
-        .gte('datetime', startOfDay.toISOString()) // ← Desde hoy en adelante
-        .order('datetime', { ascending: true });
-
-      console.log('Query error:', error);
-      console.log('Turnos data:', data);
-
-      if (error) throw new Error(error.message);
-      return data || [];
+      // Usar la misma función que getAllPendingAppointments por ahora
+      return await this.getAllPendingAppointments();
     } catch (error) {
       console.error('Error obteniendo turnos:', error);
       return [];
@@ -214,23 +174,23 @@ export const appointmentService = {
   },
 
   // Obtener turno por ID
-  getAppointmentById: async (id, userId) => {
+  getAppointmentById: async (id) => {
     try {
       console.log('=== OBTENIENDO TURNO POR ID ===');
       console.log('ID:', id);
-      console.log('User ID:', userId);
 
-      const { data, error } = await supabase
-        .from('shift')
-        .select('*')
-        .eq('id', id)
-        .eq('user_id', userId) // ← Verificar que pertenece al usuario
-        .single();
+      const response = await fetch(`${API_BASE_URL}/appointments/${id}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
 
-      console.log('Query error:', error);
+      if (!response.ok) {
+        throw new Error('Error obteniendo turno');
+      }
+
+      const data = await response.json();
       console.log('Turno data:', data);
 
-      if (error) throw new Error(error.message);
       return data;
     } catch (error) {
       console.error('Error obteniendo turno:', error);
@@ -239,36 +199,27 @@ export const appointmentService = {
   },
 
   // Actualizar turno
-  updateAppointment: async (id, appointmentData, userId) => {
+  updateAppointment: async (id, appointmentData) => {
     try {
       console.log('=== ACTUALIZANDO TURNO ===');
       console.log('ID:', id);
-      console.log('User ID:', userId);
       console.log('Datos:', appointmentData);
 
-      const dataToUpdate = {};
+      const response = await fetch(`${API_BASE_URL}/appointments/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(appointmentData),
+      });
 
-      if (appointmentData.name) dataToUpdate.name = appointmentData.name;
-      if (appointmentData.date && appointmentData.time) {
-        dataToUpdate.datetime = `${appointmentData.date} ${appointmentData.time}:00`;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error actualizando turno');
       }
-      if (appointmentData.dni !== undefined) dataToUpdate.dni = appointmentData.dni;
-      if (appointmentData.type) dataToUpdate.type = appointmentData.type;
 
-      const { data, error } = await supabase
-        .from('shift')
-        .update(dataToUpdate)
-        .eq('id', id)
-        .eq('user_id', userId) // ← Verificar que pertenece al usuario
-        .select();
+      const data = await response.json();
+      console.log('Turno actualizado:', data);
 
-      console.log('Update error:', error);
-      console.log('Update data:', data);
-
-      if (error) throw new Error(error.message);
-
-      console.log('=== TURNO ACTUALIZADO EXITOSAMENTE ===');
-      return data[0];
+      return data;
     } catch (error) {
       console.error('Error actualizando turno:', error);
       throw error;
@@ -276,21 +227,20 @@ export const appointmentService = {
   },
 
   // Eliminar turno
-  deleteAppointment: async (id, userId) => {
+  deleteAppointment: async (id) => {
     try {
       console.log('=== ELIMINANDO TURNO ===');
       console.log('ID:', id);
-      console.log('User ID:', userId);
 
-      const { error } = await supabase
-        .from('shift')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', userId); // ← Verificar que pertenece al usuario
+      const response = await fetch(`${API_BASE_URL}/appointments/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
 
-      console.log('Delete error:', error);
-
-      if (error) throw new Error(error.message);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error eliminando turno');
+      }
 
       console.log('=== TURNO ELIMINADO EXITOSAMENTE ===');
       return true;

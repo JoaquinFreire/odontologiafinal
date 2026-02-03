@@ -1,48 +1,40 @@
-import { supabase } from '../config/supabaseClient';
+const API_BASE_URL = 'http://localhost:3000/api';
 
 export const authService = {
-  // Login seguro con Supabase Auth
+  // Login con API propia
   login: async (email, password) => {
     try {
-      console.log('=== INICIANDO LOGIN SEGURO ===');
+      console.log('=== INICIANDO LOGIN ===');
 
-      // 1️⃣ Autenticarse con Supabase Auth (maneja contraseñas seguras)
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (authError) throw authError;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error en el login');
+      }
 
-      console.log('✔ Autenticación exitosa con Supabase');
-      console.log('Auth User ID:', authData.user.id);
+      const data = await response.json();
+      console.log('Login exitoso:', data);
 
-      // 2️⃣ Obtener datos del usuario desde tabla "user"
-      // RLS garantiza que SOLO ves TU fila
-      const { data: userData, error: userError } = await supabase
-        .from('user')
-        .select('id, email, name, lastname, tuition, auth_user_id')
-        .eq('auth_user_id', authData.user.id) // ← Filtra por tu UUID de Auth
-        .single(); // ← Espera UNA fila (si hay más, error)
-console.log('User data fetch result:', userData, userError);
-      if (userError) throw userError;
-
-      console.log('✔ Datos del usuario obtenidos');
-      console.log('User data:', userData);
-
-      // 3️⃣ Guardar en localStorage
+      // Guardar token y datos del usuario
       const user = {
-        id: userData.id,
-        email: userData.email,
-        name: userData.name,
-        lastname: userData.lastname,
-        tuition: userData.tuition,
-        auth_user_id: userData.auth_user_id
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.name,
+        lastname: data.user.lastname,
+        tuition: data.user.tuition,
       };
 
-      localStorage.setItem('auth_session', JSON.stringify(user));
-      console.log('✔ Sesión guardada en localStorage');
+      localStorage.setItem('auth_token', data.token);
+      localStorage.setItem('auth_user', JSON.stringify(user));
 
+      console.log('Sesión guardada en localStorage');
       return user;
     } catch (error) {
       console.error('=== ERROR EN LOGIN ===');
@@ -51,23 +43,20 @@ console.log('User data fetch result:', userData, userError);
     }
   },
 
-  // Logout seguro
+  // Logout
   logout: async () => {
     try {
       console.log('=== INICIANDO LOGOUT ===');
-      
-      // Cerrar sesión en Supabase Auth
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) throw error;
 
       // Limpiar localStorage
-      localStorage.removeItem('auth_session');
-      
-      console.log('✔ Sesión cerrada completamente');
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+
+      console.log('Sesión cerrada completamente');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
-      localStorage.removeItem('auth_session');
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
       throw error;
     }
   },
@@ -76,53 +65,55 @@ console.log('User data fetch result:', userData, userError);
   checkAuth: async () => {
     try {
       console.log('=== VERIFICANDO AUTENTICACIÓN ===');
-      
-      // Verificar con Supabase Auth
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error) throw error;
 
-      const isAuth = !!session;
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        console.log('No hay token');
+        return false;
+      }
+
+      // Verificar token con el backend
+      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const isAuth = response.ok;
       console.log('¿Autenticado?:', isAuth);
-      
+
+      if (!isAuth) {
+        // Limpiar si token inválido
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_user');
+      }
+
       return isAuth;
     } catch (error) {
       console.error('Error verificando autenticación:', error);
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
       return false;
     }
   },
 
-  // Obtener usuario actual (con RLS activo)
+  // Obtener usuario actual
   getUser: async () => {
     try {
       console.log('=== OBTENIENDO USUARIO ACTUAL ===');
-      
-      // 1️⃣ Obtener sesión de Auth
-      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-      
-      if (authError) throw authError;
-      
-      if (!authUser) {
-        console.warn('No hay sesión activa');
+
+      const token = localStorage.getItem('auth_token');
+      const userData = localStorage.getItem('auth_user');
+
+      if (!token || !userData) {
+        console.log('No hay token o datos de usuario');
         return null;
       }
 
-      console.log('Auth User ID:', authUser.id);
-
-      // 2️⃣ Obtener datos de tabla "user" (RLS filtra automáticamente)
-      const { data: userData, error: userError } = await supabase
-        .from('user')
-        .select('id, email, name, lastname, tuition, auth_user_id')
-        .eq('auth_user_id', authUser.id)
-        .single();
-
-      if (userError) {
-        console.warn('No se encontraron datos del usuario en tabla "user"');
-        return null;
-      }
-
-      console.log('✔ Datos del usuario obtenidos:', userData);
-      return userData;
+      const user = JSON.parse(userData);
+      console.log('Usuario obtenido:', user);
+      return user;
     } catch (error) {
       console.error('Error obteniendo datos del usuario:', error);
       return null;
@@ -132,10 +123,16 @@ console.log('User data fetch result:', userData, userError);
   // Limpiar sesión local
   clearSession: () => {
     try {
-      localStorage.removeItem('auth_session');
-      console.log('✔ Sesión local limpiada');
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      console.log('Sesión local limpiada');
     } catch (error) {
       console.error('Error limpiando sesión:', error);
     }
+  },
+
+  // Obtener token
+  getToken: () => {
+    return localStorage.getItem('auth_token');
   }
 };
