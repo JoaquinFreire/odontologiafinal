@@ -1,0 +1,312 @@
+/* --- CONTENEDOR PRINCIPAL --- */
+.centrar {
+  background-color: #f8fafc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.centrar::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 500px;
+  height: 500px;
+  background: rgba(0, 102, 204, 0.03);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* --- TARJETA --- */
+.login-card {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+  padding: 45px 40px;
+  width: 100%;
+  animation: slideUp 0.6s ease;
+  box-sizing: border-box;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- LOGO Y TEXTOS --- */
+.logo-section {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.logo-icon {
+  width: 150px;
+  height: auto;
+  display: block;
+  animation: bounce 2s infinite;
+  margin: 0 auto 15px auto;
+}
+.logo-icon2 {
+  width: 70px;
+  height: auto;
+  display: block;
+  animation: bounce 2s infinite;
+  margin: 0 auto;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.clinic-name {
+  color: #0066cc;
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.clinic-subname {
+  color: #64748b;
+  font-weight: 400;
+  margin-top: 6px;
+  font-size: 0.95rem;
+}
+
+/* --- FORMULARIO E INPUTS --- */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  color: #1a237e;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Contenedor que permite poner el icono adentro */
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-with-icon input {
+  width: 100%;
+  padding: 14px 16px 14px 48px !important; /* Espacio para el icono a la izquierda */
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #f8fafc;
+  box-sizing: border-box;
+}
+
+.input-with-icon input:focus {
+  outline: none;
+  border-color: #0066cc;
+  background-color: white;
+  box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
+}
+
+/* Estilo para los logos (Mail y Lock) */
+.inner-icon {
+  position: absolute;
+  left: 14px;
+  color: #0066cc;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* --- CARTELES DE ERROR --- */
+.input-error {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2 !important;
+}
+
+/* Cartel Rojo (Credenciales) */
+.error-message-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #b91c1c;
+  background-color: #fef2f2;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 4px;
+  border: 1px solid #fee2e2;
+  animation: shake 0.4s ease-in-out;
+}
+
+/* Cartel Ambar/Naranja (Formato Email) */
+.error-message-format {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #92400e;
+  background-color: #fffbeb;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 4px;
+  border: 1px solid #fef3c7;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* --- BOTÓN DE INICIO --- */
+.login-button {
+  background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+  box-shadow: 0 4px 15px rgba(0, 102, 204, 0.2);
+}
+
+.login-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0052a3 0%, #003d7a 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 102, 204, 0.3);
+}
+
+.login-button:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* --- FOOTER --- */
+.footer-note {
+  margin-top: 30px;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 30px 20px;
+  }
+}
+
+/* (Copia y pega este CSS para asegurar que los estilos de error sean consistentes) */
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.inner-icon {
+  position: absolute;
+  left: 14px;
+  color: #0066cc;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.input-with-icon input {
+  width: 100%;
+  padding: 14px 16px 14px 48px !important;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 1rem;
+  background-color: #f8fafc;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.input-error {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2 !important;
+}
+
+/* Cartel para errores de servidor (Rojo) */
+.error-message-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #b91c1c;
+  background-color: #fef2f2;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 6px;
+  border: 1px solid #fee2e2;
+  animation: shake 0.4s ease-in-out;
+}
+
+/* Cartel para validación de formato (Ámbar) */
+.error-message-format {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #92400e;
+  background-color: #fffbeb;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 6px;
+  border: 1px solid #fef3c7;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.login-button:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}

@@ -1,0 +1,81 @@
+# 📦 .NET & Clean Architecture Git Ignore
+
+# 🔹 Build Artifacts
+bin/
+obj/
+/node_modules
+/.pnp
+.pnp.js
+node_modules/
+node_modules\
+**/node_modules/
+# 🔹 Dependencies
+*.dll
+*.exe
+*.so
+*.dylib
+*.pdb
+*bin/
+*obj/
+# bin y obj en cualquier proyecto
+**/bin/
+**/obj/
+# 🔹 User-Specific Files
+.vscode/
+.idea/
+*.user
+*.suo
+*.sln.docstates
+*.VC.db
+*.VC.opendb
+
+# 🔹 Temporary Files
+*.log
+*.tmp
+*.cache
+
+# 🔹 Visual Studio Specific
+.vs/
+*.csproj.user
+
+# 🔹 Rider Specific
+.idea/
+*.sln.iml
+
+# 🔹 Entity Framework Migrations
+Migrations/
+
+# 🔹 Local App Data
+appsettings.Development.json
+secrets.json
+
+# 🔹 Node & Frontend (si aplicable)
+node_modules/
+*.env
+out/
+# 🔹 Git Specific
+*.orig
+
+# 🔹 MySQL & Database Files
+*.mdf
+*.ldf
+*.sqlite
+*.db-shm
+*.db-wal
+
+# 🔹 Coverage & Testing
+coverage/
+TestResults/
+*.trx
+
+# 🔹 Auto-Generated Files
+*.generated.cs
+.cache/
+Backend/Application/obj/**/
+Backend/Domain/obj/**/
+Backend/Presentation/obj/**/
+Backend/Infrastructure/obj/**/
+Backend/Application/bin/**/
+Backend/Domain/bin/**/
+Backend/Presentation/bin/**/
+Backend/Infrastructure/bin/**/

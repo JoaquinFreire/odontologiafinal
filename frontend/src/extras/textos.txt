@@ -1,0 +1,59 @@
+ const conditions = [
+    // Cariés y restauraciones
+    { id: 'caries', name: 'Caries', symbol: 'C', color: '#ff0000', type: 'face', category: 'caries' },
+    { id: 'obturation', name: 'Obturación', symbol: 'O', color: '#00ff00', type: 'face', category: 'caries' },
+    { id: 'obturation_amalgama', name: 'Obt. Amalgama', symbol: 'A', color: '#6666ff', type: 'face', category: 'caries' },
+    { id: 'obturation_resina', name: 'Obt. Resina', symbol: 'R', color: '#ffff00', type: 'face', category: 'caries' },
+    
+    // Coronas y prótesis
+    { id: 'crown', name: 'Corona', symbol: 'CR', color: '#ff9900', type: 'tooth', category: 'crown' },
+    { id: 'crown_temp', name: 'Corona Temp', symbol: 'CT', color: '#ffcc00', type: 'tooth', category: 'crown' },
+    { id: 'prosthesis_fixed', name: 'Prótesis Fija', symbol: 'PF', color: '#9966ff', type: 'tooth', category: 'crown' },
+    { id: 'prosthesis_rem', name: 'Prótesis Rem', symbol: 'PR', color: '#cc66ff', type: 'tooth', category: 'crown' },
+    { id: 'implant', name: 'Implante', symbol: 'I', color: '#66ccff', type: 'tooth', category: 'crown' },
+    
+    // Endodoncia y postes
+    { id: 'pulpar', name: 'Pulpar', symbol: 'PU', color: '#ff0066', type: 'face', category: 'endo' },
+    { id: 'post', name: 'Poste', symbol: 'PT', color: '#ff66cc', type: 'tooth', category: 'endo' },
+    { id: 'perno', name: 'Perno', symbol: 'PE', color: '#ff99cc', type: 'tooth', category: 'endo' },
+    
+    // Anomalías dentales
+    { id: 'fracture', name: 'Fractura', symbol: 'F', color: '#0000ff', type: 'tooth', category: 'anomalies' },
+    { id: 'diastema', name: 'Diastema', symbol: 'DI', color: '#00ffff', type: 'tooth', category: 'anomalies' },
+    { id: 'rotation', name: 'Rotación', symbol: 'RO', color: '#ff00ff', type: 'tooth', category: 'anomalies' },
+    { id: 'migration', name: 'Migración', symbol: 'MG', color: '#ffff99', type: 'tooth', category: 'anomalies' },
+    { id: 'impacted', name: 'Impactado', symbol: 'IM', color: '#666699', type: 'tooth', category: 'anomalies' },
+    { id: 'semi_impacted', name: 'Semi-impactado', symbol: 'SI', color: '#9999cc', type: 'tooth', category: 'anomalies' },
+    { id: 'ectopic', name: 'Ectópico', symbol: 'EC', color: '#cc9999', type: 'tooth', category: 'anomalies' },
+    
+    // Otros
+    { id: 'absent', name: 'Ausente', symbol: 'X', color: '#000000', type: 'tooth', category: 'other' },
+    { id: 'extraction', name: 'Extracción', symbol: 'EX', color: '#333333', type: 'tooth', category: 'other' },
+    { id: 'edentulism', name: 'Edentulismo', symbol: 'ED', color: '#666666', type: 'tooth', category: 'other' },
+    { id: 'macrodontia', name: 'Macrodoncia', symbol: 'MA', color: '#ff6666', type: 'tooth', category: 'anomalies' },
+    { id: 'microdontia', name: 'Microdoncia', symbol: 'MI', color: '#66ff66', type: 'tooth', category: 'anomalies' },
+    { id: 'dyschromia', name: 'Discromía', symbol: 'DC', color: '#6666ff', type: 'tooth', category: 'anomalies' },
+    
+    // Ortodoncia
+    { id: 'ortho_fixed', name: 'Ortodoncia Fija', symbol: 'OF', color: '#ff99ff', type: 'tooth', category: 'ortho' },
+    { id: 'ortho_rem', name: 'Ortodoncia Rem', symbol: 'OR', color: '#cc99ff', type: 'tooth', category: 'ortho' },
+    
+    // Desgaste y trauma
+    { id: 'worn', name: 'Desgastado', symbol: 'DE', color: '#996633', type: 'face', category: 'trauma' },
+    { id: 'attrition', name: 'Atrusión', symbol: 'AT', color: '#663300', type: 'face', category: 'trauma' },
+    { id: 'abrasion', name: 'Abrasión', symbol: 'AB', color: '#cc9966', type: 'face', category: 'trauma' },
+    { id: 'erosion', name: 'Erosión', symbol: 'ER', color: '#ffcc99', type: 'face', category: 'trauma' },
+    
+    // Desarrollo
+    { id: 'eruption', name: 'Erupción', symbol: 'EP', color: '#99ff99', type: 'tooth', category: 'development' },
+    { id: 'intrusion', name: 'Intrusión', symbol: 'IN', color: '#99ccff', type: 'tooth', category: 'development' },
+    { id: 'extrusion', name: 'Extrusión', symbol: 'EX', color: '#ffcc66', type: 'tooth', category: 'development' },
+    
+    // Varios
+    { id: 'fusion', name: 'Fusión', symbol: 'FU', color: '#ff6699', type: 'tooth', category: 'anomalies' },
+    { id: 'gemination', name: 'Geminación', symbol: 'GE', color: '#ff99cc', type: 'tooth', category: 'anomalies' },
+    { id: 'dilaceration', name: 'Dilaceración', symbol: 'DL', color: '#cc66cc', type: 'tooth', category: 'anomalies' },
+    { id: 'supernumerary', name: 'Supernumerario', symbol: 'SN', color: '#ffccff', type: 'tooth', category: 'anomalies' },
+    { id: 'transposition', name: 'Transposición', symbol: 'TR', color: '#ccffff', type: 'tooth', category: 'anomalies' },
+    { id: 'remnant', name: 'Remanente', symbol: 'RE', color: '#cccccc', type: 'tooth', category: 'other' },
+  ];

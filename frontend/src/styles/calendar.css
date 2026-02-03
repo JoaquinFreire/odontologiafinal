@@ -1,0 +1,192 @@
+/* Diary.css */
+.diary-container {
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.diary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  background: white;
+  padding: 15px 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.diary-nav {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.diary-nav button {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.diary-nav button:hover {
+  background-color: #e3f2fd;
+  border-color: #2196f3;
+  color: #2196f3;
+}
+
+.current-week-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  min-width: 250px;
+  text-align: center;
+}
+
+/* --- GRID PRINCIPAL --- */
+.diary-grid {
+  display: grid;
+  /* 1 columna para hora (60px) + 7 columnas para días */
+  grid-template-columns: 60px repeat(7, 1fr); 
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* Cabeceras de Días (Lunes, Martes...) */
+.grid-header-cell {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #e0e0e0;
+  border-right: 1px solid #f0f0f0;
+  padding: 15px 5px;
+  text-align: center;
+  font-weight: 600;
+  color: #555;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.grid-header-cell.today {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.day-name { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
+.day-number { font-size: 1.2rem; font-weight: 700; }
+
+/* Columna de Horas */
+.time-col-header {
+  border-bottom: 2px solid #e0e0e0;
+  border-right: 2px solid #e0e0e0;
+  background-color: #fff;
+}
+
+.time-label {
+  display: flex;
+  align-items: center; /* Alinea la hora al centro verticalmente */
+  justify-content: center;
+  font-size: 1rem;
+  color: #414141;
+  font-weight: 500;
+  border-bottom: 1px solid #f0f0f0;
+  border-right: 2px solid #e0e0e0;
+  height: 50px; /* Altura fija por celda */
+  background-color: #fff;
+}
+
+/* Celdas del Calendario */
+.grid-cell {
+  height: 50px; /* Debe coincidir con time-label */
+  border-bottom: 1px solid #c0bfbf;
+  border-right: 1px solid #c0bfbf;
+  position: relative;
+  transition: background 0.1s;
+  cursor: pointer;
+}
+
+.grid-cell:hover {
+  background-color: #fafafa;
+}
+
+.grid-cell:hover::after {
+  content: "+";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #ccc;
+  font-size: 1.5rem;
+}
+
+/* Eventos (Los turnos renderizados) */
+.appointment-chip {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  color: white;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+  z-index: 2;
+  transition: transform 0.1s;
+}
+
+.appointment-chip:hover {
+  transform: scale(1.02);
+  z-index: 10;
+}
+
+/* Colores de estado solicitados */
+.chip-overdue {
+  background-color: #ef5350; /* Rojo */
+  border-left: 4px solid #b71c1c;
+}
+
+.chip-today {
+  background-color: #66bb6a; /* Verde */
+  border-left: 4px solid #2e7d32;
+}
+
+.chip-future {
+  background-color: #42a5f5; /* Azul */
+  border-left: 4px solid #1565c0;
+}
+
+.chip-completed {
+  background-color: #bdbdbd; /* Gris */
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.chip-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chip-type { font-size: 0.7rem; opacity: 0.9; }
+
+/* Modal Styles (Reutilizados del Home pero ajustados si hace falta) */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white; padding: 25px; border-radius: 12px;
+  width: 90%; max-width: 500px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}

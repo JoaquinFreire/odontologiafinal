@@ -1,0 +1,437 @@
+/* =========================================
+   ESTRUCTURA GENERAL Y CONTENEDORES
+   ========================================= */
+.view-patient-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.header-section {
+  margin-bottom: 30px;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: #666;
+}
+
+/* =========================================
+   BÚSQUEDA Y NUEVO PACIENTE
+   ========================================= */
+.search-section {
+  margin: 18px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.search-container {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  align-items: center;
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  flex: 1;
+  max-width: 600px;
+}
+
+.search-icon-container {
+  color: #6c757d;
+  font-size: 18px;
+}
+
+.search-input {
+  border: none;
+  outline: none;
+  font-size: 15px;
+  flex: 1;
+}
+
+.new-patient-btn {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.new-patient-btn:hover {
+  background: #0069d9;
+} 
+
+/* =========================================
+   TABLA DE PACIENTES
+   ========================================= */
+.patients-table-container {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.patients-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px; /* Evita que la tabla se comprima demasiado */
+}
+
+.patients-table th {
+  padding: 16px;
+  background-color: #f8f9fa;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.patients-table td {
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+.patient-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.patient-avatar {
+  width: 36px;
+  height: 36px;
+  background-color: #e7f1ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #007bff;
+}
+
+.patient-name {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.dni-text {
+  font-family: 'Roboto Mono', monospace;
+  color: #444;
+  font-size: 14px;
+}
+
+/* =========================================
+   BOTONES DE ACCIÓN (4 BOTONES)
+   ========================================= */
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.2s ease;
+}
+
+.details-btn { background-color: #e7f1ff; color: #007bff; }
+.history-btn { background-color: #e8f5e9; color: #28a745; }
+.appointment-btn { background-color: #f3e5f5; color: #6f42c1; }
+.payment-btn { background-color: #fff3e0; color: #ef6c00; font-weight: bold; }
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(0.95);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* =========================================
+   SISTEMA DE COBROS (MODAL WIDE)
+   ========================================= */
+.payment-modal.wide {
+  max-width: 750px;
+  padding: 30px;
+}
+
+.payment-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: 25px;
+}
+
+.payment-card {
+  background: #fcfcfc;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.payment-label {
+  font-size: 11px;
+  padding: 10px;
+  color: #777;
+  text-transform: uppercase;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.payment-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.pending.debt .payment-value { color: #dc3545; }
+.pending.settled .payment-value { color: #28a745; }
+
+/* Input de presupuesto editable */
+.inline-edit-input {
+  border: 1px solid transparent;
+  background: rgba(0,0,0,0.05);
+  font-size: 20px;
+  font-weight: 800;
+  text-align: center;
+  width: 100%;
+  border-radius: 6px;
+  padding: 2px;
+  transition: all 0.2s;
+}
+
+.inline-edit-input:focus {
+  background: white;
+  border-color: #007bff;
+  outline: none;
+}
+
+/* =========================================
+   FORMULARIO DE NUEVO ABONO (NO COMPRIMIDO)
+   ========================================= */
+.add-payment-form {
+  background: #f1f3f5;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+}
+
+.section-subtitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #444;
+  margin-bottom: 12px;
+}
+
+.payment-inputs-row {
+  display: flex;
+  flex-wrap: wrap; /* Permite que los elementos bajen si no hay espacio */
+  gap: 15px;
+  align-items: flex-end;
+}
+
+.input-group {
+  flex: 1;
+  min-width: 140px; /* Impide que se vean minúsculos */
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  font-size: 15px;
+  background-color: white;
+}
+
+.btn-add-payment {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 0 25px;
+  border-radius: 8px;
+  height: 42px;
+  width: 100%;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.delete-payment-btn {
+    background: transparent;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.delete-payment-btn:hover {
+    background: #fff0f0;
+    transform: scale(1.1);
+}
+
+.btn-add-payment:hover {
+  background-color: #218838;
+}
+
+/* =========================================
+   HISTORIAL DE MOVIMIENTOS (MINI TABLA)
+   ========================================= */
+.mini-table-container {
+  border: 1px solid #eee;
+  border-radius: 10px;
+  overflow: hidden;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.mini-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mini-table th {
+  background: #f8f9fa;
+  padding: 12px;
+  font-size: 12px;
+  color: #666;
+  text-align: left;
+  position: sticky;
+  top: 0;
+}
+
+.mini-table td {
+  padding: 12px;
+  border-top: 1px solid #f1f1f1;
+  font-size: 14px;
+}
+
+.method-badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.method-badge.efectivo { background: #e3f2fd; color: #1976d2; }
+.method-badge.transferencia { background: #f3e5f5; color: #7b1fa2; }
+
+/* =========================================
+   MODALES (COMÚN)
+   ========================================= */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 15px;
+}
+
+.modal {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #999;
+}
+
+.modal-content {
+  padding: 20px;
+}
+
+.divider {
+  border: 0;
+  border-top: 1px solid #eee;
+  margin: 20px 0;
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+@media (max-width: 768px) {
+  .payment-summary-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .payment-inputs-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .action-buttons {
+    flex-wrap: wrap;
+  }
+
+  .search-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input-wrapper {
+    width: 100%;
+    max-width: none;
+  }
+
+  .new-patient-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
