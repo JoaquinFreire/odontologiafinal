@@ -29,6 +29,7 @@ const Home = ({ user, handleLogout }) => {
   const [loading, setLoading] = useState(false);
   const [markingComplete, setMarkingComplete] = useState(null);
   const [selectedAppointmentToReschedule, setSelectedAppointmentToReschedule] = useState(null);
+  const [rescheduleForm, setRescheduleForm] = useState({ date: '', time: '' });
   const [activeNav, setActiveNav] = useState('dashboard');
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -114,11 +115,48 @@ const Home = ({ user, handleLogout }) => {
   };
 
   // Stubs para funciones que TodayAppointments requiere
-  const handleMarkAsCompleted = (id) => console.log("Completar:", id);
-  const handleDeleteAppointment = (id) => console.log("Eliminar:", id);
+  const handleMarkAsCompleted = async (id) => {
+    try {
+      setMarkingComplete(id);
+      await appointmentService.markAppointmentAsCompleted(id);
+      loadAllAppointmentData();
+    } catch (error) {
+      alert('Error al marcar como completado');
+    } finally {
+      setMarkingComplete(null);
+    }
+  };
+  const handleDeleteAppointment = async (id) => {
+    if (confirm('¿Estás seguro de eliminar este turno?')) {
+      try {
+        await appointmentService.deleteAppointment(id);
+        loadAllAppointmentData();
+      } catch (error) {
+        alert('Error al eliminar turno');
+      }
+    }
+  };
   const handleOpenRescheduleModal = (app) => {
     setSelectedAppointmentToReschedule(app);
+    setRescheduleForm({ date: app.date, time: app.time });
     setShowRescheduleModal(true);
+  };
+
+  const handleRescheduleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await appointmentService.updateAppointment(selectedAppointmentToReschedule.id, {
+        date: rescheduleForm.date,
+        time: rescheduleForm.time,
+        name: selectedAppointmentToReschedule.name,
+        type: selectedAppointmentToReschedule.type,
+        dni: selectedAppointmentToReschedule.dni
+      });
+      setShowRescheduleModal(false);
+      loadAllAppointmentData();
+    } catch (error) {
+      alert('Error al reprogramar');
+    }
   };
 
   const quickActions = [
@@ -277,6 +315,33 @@ const Home = ({ user, handleLogout }) => {
                 <button type="submit" className="btn-primary" disabled={loading}>{loading ? 'Agendando...' : 'Agendar Turno'}</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showRescheduleModal && selectedAppointmentToReschedule && (
+        <div className="modal-overlay" onClick={() => setShowRescheduleModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Reprogramar Turno</h3>
+              <button onClick={() => setShowRescheduleModal(false)} className="close-btn">×</button>
+            </div>
+            <div className="modal-content">
+              <form onSubmit={handleRescheduleSubmit}>
+                <div className="form-group">
+                  <label>Fecha</label>
+                  <input type="date" value={rescheduleForm.date} onChange={e => setRescheduleForm({...rescheduleForm, date: e.target.value})} required />
+                </div>
+                <div className="form-group">
+                  <label>Hora</label>
+                  <input type="time" value={rescheduleForm.time} onChange={e => setRescheduleForm({...rescheduleForm, time: e.target.value})} required />
+                </div>
+                <div className="modal-actions">
+                  <button type="button" onClick={() => setShowRescheduleModal(false)}>Cancelar</button>
+                  <button type="submit">Reprogramar</button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

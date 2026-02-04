@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/Login.css';
+import '../styles/login.css';
 import { authService } from '../services/authService';
 import { Mail, Lock, AlertCircle, Info } from 'lucide-react'; 
 import logo from '../img/logo.webp'; 

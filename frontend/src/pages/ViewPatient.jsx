@@ -1,10 +1,11 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/ViewPatient.css';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import SearchPatients from '../components/SearchPatients';
+import PaginationControls from '../components/PaginationControls';
 import { getAllPatients, calculateAge } from '../services/patientService';
 import { appointmentService } from '../services/appointmentService';
 
@@ -16,6 +17,7 @@ const ViewPatient = ({ setIsAuthenticated, user, setUser }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [totalPatients, setTotalPatients] = useState(0);
     const [patientsPerPage] = useState(10);
 
     useEffect(() => {
@@ -47,15 +49,20 @@ const ViewPatient = ({ setIsAuthenticated, user, setUser }) => {
             if (!user?.id) return;
             try {
                 setLoading(true);
-                const result = await getAllPatients(user.id, currentPage, patientsPerPage);
+                const result = await getAllPatients(currentPage, patientsPerPage, searchTerm);
                 if (result.success) {
                     setPatients(result.data);
                     setTotalPages(result.pagination.totalPages);
+                    setTotalPatients(result.pagination.totalPatients);
                 }
             } catch (error) { console.error(error); } finally { setLoading(false); }
         };
         loadPatients();
-    }, [user, currentPage, patientsPerPage]);
+    }, [user, currentPage, searchTerm, patientsPerPage]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
 
     // Handlers Cobros
     const openPaymentModal = (patient) => {
@@ -86,12 +93,6 @@ const ViewPatient = ({ setIsAuthenticated, user, setUser }) => {
         setShowAppointmentModal(true);
     };
 
-    const filteredPatients = useMemo(() => {
-        return patients.filter(p => 
-            `${p.name} ${p.lastname}`.toLowerCase().includes(searchTerm.toLowerCase()) || p.dni.includes(searchTerm)
-        );
-    }, [searchTerm, patients]);
-
      // Ir a historial clínico
     const openMedicalHistory = (patient) => {
         navigate(`/patients/${patient.id}/history`);
@@ -107,11 +108,11 @@ const ViewPatient = ({ setIsAuthenticated, user, setUser }) => {
                         <p className="page-subtitle">Control clínico y de pagos</p>
                     </div>
 
-                    <SearchPatients searchTerm={searchTerm} onSearchChange={(e) => setSearchTerm(e.target.value)} />
+                    <SearchPatients searchTerm={searchTerm} onSearchChange={(term) => setSearchTerm(term)} />
 
                     {loading ? (
                         <div className="loading">Cargando pacientes...</div>
-                    ) : filteredPatients.length === 0 ? (
+                    ) : patients.length === 0 ? (
                         <div className="no-results">
                             <p>No hay pacientes registrados</p>
                         </div>
@@ -129,7 +130,7 @@ const ViewPatient = ({ setIsAuthenticated, user, setUser }) => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {filteredPatients.map(p => (
+                                            {patients.map(p => (
                                                 <tr key={p.id}>
                                                     <td>
                                                         <div className="patient-info">
@@ -162,36 +163,13 @@ const ViewPatient = ({ setIsAuthenticated, user, setUser }) => {
 
                             {/* Paginación */}
                             {totalPages > 1 && (
-                                <div className="pagination-container">
-                                    <div className="pagination-info">
-                                        Página {currentPage} de {totalPages}
-                                    </div>
-                                    <div className="pagination-buttons">
-                                        <button
-                                            className={`pagination-btn ${currentPage === 1 ? 'disabled' : ''}`}
-                                            onClick={() => setCurrentPage(currentPage - 1)}
-                                            disabled={currentPage === 1}
-                                        >
-                                            ←
-                                        </button>
-                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                                            <button
-                                                key={page}
-                                                className={`page-number ${currentPage === page ? 'active' : ''}`}
-                                                onClick={() => setCurrentPage(page)}
-                                            >
-                                                {page}
-                                            </button>
-                                        ))}
-                                        <button
-                                            className={`pagination-btn ${currentPage === totalPages ? 'disabled' : ''}`}
-                                            onClick={() => setCurrentPage(currentPage + 1)}
-                                            disabled={currentPage === totalPages}
-                                        >
-                                            →
-                                        </button>
-                                    </div>
-                                </div>
+                                <PaginationControls
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    totalPatients={totalPatients}
+                                    patientsPerPage={patientsPerPage}
+                                    onPageChange={setCurrentPage}
+                                />
                             )}
                         </>
                     )}
