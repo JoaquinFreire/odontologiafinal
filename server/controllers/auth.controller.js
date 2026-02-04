@@ -119,8 +119,36 @@ const getProfile = async (req, res) => {
   }
 };
 
+const updateProfile = async (req, res) => {
+  try {
+    console.log('=== ACTUALIZANDO PERFIL ===');
+    const userId = req.user.id;
+    const { email, tuition } = req.body;
+    console.log('userId:', userId, 'email:', email, 'tuition:', tuition);
+
+    // Verificar que el email no esté tomado por otro usuario
+    console.log('Verificando email duplicado...');
+    const [existing] = await pool.execute('SELECT id FROM users WHERE email = ? AND id != ?', [email, userId]);
+    console.log('Usuarios con email existente:', existing.length);
+    if (existing.length > 0) {
+      console.log('Email ya en uso');
+      return res.status(400).json({ error: 'El email ya está en uso' });
+    }
+
+    console.log('Actualizando perfil...');
+    await pool.execute('UPDATE users SET email = ?, tuition = ? WHERE id = ?', [email, tuition, userId]);
+
+    console.log('Perfil actualizado correctamente');
+    res.json({ message: 'Perfil actualizado correctamente' });
+  } catch (error) {
+    console.error('Error actualizando perfil:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
 module.exports = {
   login,
   register,
-  getProfile
+  getProfile,
+  updateProfile
 };

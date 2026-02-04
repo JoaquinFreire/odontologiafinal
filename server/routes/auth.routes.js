@@ -1,5 +1,5 @@
 const express = require('express');
-const { login, register, getProfile } = require('../controllers/auth.controller');
+const { login, register, getProfile, updateProfile } = require('../controllers/auth.controller');
 const { authenticateToken } = require('../middlewares/auth');
 
 const router = express.Router();
@@ -10,5 +10,6 @@ router.post('/register', register);
 
 // Rutas protegidas
 router.get('/profile', authenticateToken, getProfile);
+router.put('/profile', authenticateToken, updateProfile);
 
 module.exports = router;

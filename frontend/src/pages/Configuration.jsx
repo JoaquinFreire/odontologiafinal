@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Save, User as UserIcon, Mail, CreditCard } from 'lucide-react';
 import NavBar from '../components/NavBar';
-import { supabase } from '../config/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Configuration.css'; // Asegúrate de importar el CSS
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const Configuration = ({ setIsAuthenticated, user, setUser }) => {
   const [formData, setFormData] = useState({
@@ -26,30 +27,38 @@ const Configuration = ({ setIsAuthenticated, user, setUser }) => {
 
   useEffect(() => {
     loadUserData();
-  }, [user]);
+  }, []);
 
   const loadUserData = async () => {
     try {
-      if (!user?.email) return;
-
-      const { data, error } = await supabase
-        .from('user')
-        .select('*')
-        .eq('email', user.email)
-        .single();
-
-      if (error) throw new Error(error.message);
-
-      if (data) {
-        const userData = {
-          email: data.email || '',
-          name: data.name || '',
-          lastname: data.lastname || '',
-          tuition: data.tuition || ''
-        };
-        setFormData(userData);
-        setOriginalData(userData);
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        setMessage('No autenticado');
+        setMessageType('error');
+        return;
       }
+
+      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Error obteniendo perfil');
+      }
+
+      const data = await response.json();
+
+      const userData = {
+        email: data.user.email || '',
+        name: data.user.name || '',
+        lastname: data.user.lastname || '',
+        tuition: data.user.tuition || ''
+      };
+      setFormData(userData);
+      setOriginalData(userData);
     } catch (error) {
       setMessage('Error al cargar los datos');
       setMessageType('error');
@@ -77,20 +86,29 @@ const Configuration = ({ setIsAuthenticated, user, setUser }) => {
     setMessage('');
 
     try {
-      const dataToUpdate = {
-        email: formData.email,
-        tuition: formData.tuition
-      };
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('No autenticado');
+      }
 
-      const { error } = await supabase
-        .from('user')
-        .update(dataToUpdate)
-        .eq('email', originalData.email);
+      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          tuition: formData.tuition
+        }),
+      });
 
-      if (error) throw new Error(error.message);
+      if (!response.ok) {
+        throw new Error('Error actualizando perfil');
+      }
 
       setOriginalData(formData);
-      setUser(prev => ({ ...prev, ...dataToUpdate }));
+      setUser(prev => ({ ...prev, email: formData.email, tuition: formData.tuition }));
       setMessage('✓ Datos actualizados exitosamente');
       setMessageType('success');
     } catch (error) {
