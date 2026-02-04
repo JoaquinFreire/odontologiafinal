@@ -404,34 +404,55 @@
 }
 
 /* =========================================
-   RESPONSIVE
+   PAGINACIÓN
    ========================================= */
-@media (max-width: 768px) {
-  .payment-summary-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .payment-inputs-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .action-buttons {
-    flex-wrap: wrap;
-  }
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding: 15px 0;
+  border-top: 1px solid #eee;
+}
 
-  .search-container {
-    flex-direction: column;
-    align-items: stretch;
-  }
+.pagination-info {
+  font-size: 14px;
+  color: #666;
+}
 
-  .search-input-wrapper {
-    width: 100%;
-    max-width: none;
-  }
+.pagination-buttons {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
 
-  .new-patient-btn {
-    width: 100%;
-    justify-content: center;
-  }
+.pagination-btn, .page-number {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  background: white;
+  color: #007bff;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(.disabled), .page-number:hover {
+  background: #f8f9fa;
+  border-color: #007bff;
+}
+
+.pagination-btn.disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.page-number.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.pagination-ellipsis {
+  padding: 8px 12px;
+  color: #666;
 }

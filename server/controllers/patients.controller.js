@@ -6,21 +6,26 @@ const getAllPatients = async (req, res) => {
     const userId = req.user.id;
     const page = parseInt(req.query.page) || 1;
     const pageSize = parseInt(req.query.pageSize) || 10;
+    const searchTerm = req.query.search || '';
     const offset = (page - 1) * pageSize;
 
     console.log('=== GET ALL PATIENTS ===');
-    console.log('userId:', userId, 'page:', page, 'pageSize:', pageSize, 'offset:', offset);
+    console.log('userId:', userId, 'page:', page, 'pageSize:', pageSize, 'offset:', offset, 'search:', searchTerm);
+
+    let countQuery = `SELECT COUNT(*) as total FROM patient WHERE user_id = ${userId}`;
+    let patientsQuery = `SELECT * FROM patient WHERE user_id = ${userId} ORDER BY id DESC LIMIT ${pageSize} OFFSET ${offset}`;
+
+    if (searchTerm) {
+      countQuery += ` AND (name LIKE '%${searchTerm}%' OR dni LIKE '%${searchTerm}%')`;
+      patientsQuery = patientsQuery.replace(`WHERE user_id = ${userId}`, `WHERE user_id = ${userId} AND (name LIKE '%${searchTerm}%' OR dni LIKE '%${searchTerm}%')`);
+    }
 
     // Obtener total de pacientes
-    const [countResult] = await pool.execute(
-      `SELECT COUNT(*) as total FROM patient WHERE user_id = ${userId}`
-    );
+    const [countResult] = await pool.query(countQuery);
     const totalPatients = countResult[0].total;
 
     // Obtener pacientes paginados
-    const [patients] = await pool.execute(
-      `SELECT * FROM patient WHERE user_id = ${userId} ORDER BY id DESC LIMIT ${pageSize} OFFSET ${offset}`
-    );
+    const [patients] = await pool.query(patientsQuery);
 
     const totalPages = Math.ceil(totalPatients / pageSize);
 

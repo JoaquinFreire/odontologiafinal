@@ -1,6 +1,5 @@
-/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Función helper para obtener headers con token
 const getAuthHeaders = () => {
@@ -160,11 +159,12 @@ export const updatePatientAnamnesis = async (patientId, anamnesisData, userId, a
 };
 
 // Obtener todos los pacientes del usuario actual CON PAGINACIÓN
-export const getAllPatients = async (page = 1, pageSize = 10) => {
+export const getAllPatients = async (page = 1, pageSize = 10, searchTerm = '') => {
   try {
     const url = new URL(`${API_BASE_URL}/patients`);
     url.searchParams.append('page', page);
     url.searchParams.append('pageSize', pageSize);
+    if (searchTerm) url.searchParams.append('search', searchTerm);
 
     const response = await fetch(url, {
       method: 'GET',
