@@ -75,6 +75,7 @@ const SingleTooth = ({ id, x, y, data, onInteraction, isSelected }) => {
 
 const Odontograma = ({ initialData, onDataChange, isReadOnly = false }) => {
   const [view, setView] = useState('adult'); 
+  const [showTools, setShowTools] = useState(false);
   const [data, setData] = useState(initialData || {
     adult: { teethState: {}, connections: [] },
     child: { teethState: {}, connections: [] },
@@ -170,7 +171,11 @@ const Odontograma = ({ initialData, onDataChange, isReadOnly = false }) => {
         <button className={`view-btn ${view === 'child' ? 'active' : ''}`} onClick={() => {setView('child'); setInteractionStep(null);}} disabled={isReadOnly}>Niño</button>
       </div>
 
-      <div className="controls-panel">
+      <button className="tools-toggle" onClick={() => setShowTools(!showTools)}>
+        {showTools ? '▼ Ocultar Herramientas' : '▶ Mostrar Herramientas'}
+      </button>
+
+      <div className={`controls-panel ${showTools ? 'open' : ''}`}>
         <ToolGroup title="Básico" tools={[{id: 'cursor', label: 'Cursor'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} disabled={isReadOnly} />
         <ToolGroup title="Caries/Obt." tools={[{id: 'face_red', label: '●', className: 'text-red'}, {id: 'face_blue', label: '●', className: 'text-blue'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} disabled={isReadOnly} />
         <ToolGroup title="Coronas" tools={[{id: 'crown_red', label: '○', className: 'text-red'}, {id: 'crown_blue', label: '○', className: 'text-blue'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} disabled={isReadOnly} />
