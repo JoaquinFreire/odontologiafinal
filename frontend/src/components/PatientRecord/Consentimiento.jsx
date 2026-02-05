@@ -2,18 +2,20 @@
 import React, { useEffect } from 'react';
 import { CheckCircle, AlertCircle } from 'lucide-react';
 
-const Consentimiento = ({ patientData, user, consentData, setConsentData, initialText }) => {
+const Consentimiento = ({ patientData, user, consentData, setConsentData, initialText, isHistoryMode = false }) => {
   // Actualizar datos del doctor cuando el componente monta o user cambia
   console.log(user, " Aca");
   useEffect(() => {
-    if (user?.name || user?.tuition) {
+    // En modo historial, no sobrescribir los datos del doctor que vinieron de la BD
+    // En modo nuevo paciente, cargar automáticamente los datos del usuario logueado
+    if (!isHistoryMode && (user?.name || user?.tuition)) {
       setConsentData(prev => ({
         ...prev,
         doctorName: `${user?.name || ''} ${user?.lastname || ''}`.trim() || '',
         doctorMatricula: user?.tuition || ''
       }));
     }
-  }, [user, setConsentData]);
+  }, [user, setConsentData, isHistoryMode]);
 
   const handleConsentChange = (field, value) => {
     setConsentData(prev => ({

@@ -293,8 +293,8 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
           setConsentData({
             accepted: data.consent.accepted,
             datetime: data.consent.datetime,
-            doctorName: user?.name || '',
-            doctorMatricula: user?.tuition || '',
+            doctorName: data.consent.doctorName || user?.name || '',
+            doctorMatricula: data.consent.doctorMatricula || user?.tuition || '',
             text: data.consent.text
           });
         }
@@ -837,6 +837,7 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
               consentData={consentData}
               setConsentData={setConsentData}
               initialText={consentData.text}
+              isHistoryMode={true}
             />
           </div>
         );

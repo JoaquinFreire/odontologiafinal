@@ -65,6 +65,8 @@ CREATE TABLE IF NOT EXISTS consent (
   text TEXT NOT NULL,
   datetime DATETIME NOT NULL,
   accepted BOOLEAN DEFAULT FALSE,
+  doctorName VARCHAR(255) DEFAULT '',
+  doctorMatricula VARCHAR(100) DEFAULT '',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
 );
