@@ -292,6 +292,17 @@ body {
   color: white;
 }
 
+/* Modal cancel button: red on hover */
+.modal-content .btn-outline.cancel {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+.modal-content .btn-outline.cancel:hover {
+  background: #ef4444;
+  color: white;
+  border-color: #b91c1c;
+}
+
 /* Icon Button Styles */
 .icon-button {
   background: transparent;
