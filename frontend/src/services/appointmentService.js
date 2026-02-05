@@ -151,9 +151,11 @@ export const appointmentService = {
       }
 
       const data = await response.json();
-      console.log('All pending appointments:', data);
+      // Filtrar solo los turnos que NO están completados (status !== 1)
+      const pendingOnly = data.filter(app => app.status !== 1);
+      console.log('All pending appointments:', pendingOnly);
 
-      return data;
+      return pendingOnly;
     } catch (error) {
       console.error('Error obteniendo turnos pendientes:', error);
       return [];
