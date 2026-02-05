@@ -296,7 +296,6 @@
 .delete-payment-btn {
     background: transparent;
     border: none;
-    color: #e74c3c;
     cursor: pointer;
     font-size: 16px;
     padding: 5px;
@@ -378,19 +377,26 @@
 }
 
 .modal-header {
-  padding: 20px;
   border-bottom: 1px solid #eee;
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 40px;
+}
+
+.modal-title{
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
 }
 
 .close-btn {
   background: none;
+  color: #fe0000;
   border: none;
   font-size: 22px;
   cursor: pointer;
-  color: #999;
 }
 
 .modal-content {
@@ -456,3 +462,231 @@
   padding: 8px 12px;
   color: #666;
 }
+
+/* --- Estilos Generales de Modales --- */
+.modal-overlay {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+}
+
+/* ---- */
+
+.modal {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalFadeIn 0.3s ease-out;
+    padding: 0 0 50px 0;
+
+    /* --- NUEVAS PROPIEDADES PARA CENTRAR --- */
+    display: flex;
+    flex-direction: column; /* Para que el contenido fluya hacia abajo */
+    align-items: center;    /* Centra horizontalmente el contenido hijo */
+}
+
+.modal.wide {
+    max-width: 800px;
+}
+
+/* --- Ajuste en el Grid --- */
+.patient-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    padding: 2rem 1rem;
+    width: 100%;           /* Ocupa el ancho disponible para que el margen funcione */
+    max-width: 500px;      /* Controla qué tan ancho quieres que sea el bloque de datos */
+    margin: 0 auto;        /* Margen automático a los lados como refuerzo */
+}
+
+/* El resto de tu código se mantiene igual */
+@keyframes modalFadeIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+
+
+/* .modal {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+.modal.wide {
+    max-width: 800px;
+}
+
+@keyframes modalFadeIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* --- Decoración del Modal Content (Detalles del Paciente) --- */
+.patient-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    padding: 2rem 1rem;
+    max-width: 600px;
+} */
+
+.patient-details-grid div {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.95rem;
+    color: #4a5568;
+    padding-bottom: 0.5rem;
+}
+
+.patient-details-grid strong {
+    color: #2d3748;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+/* --- Sección de Cobros (Cards y Resumen) --- */
+.payment-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.payment-card {
+    background: #f8fafc;
+    padding: 1.2rem;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    transition: transform 0.2s;
+}
+
+.payment-card:hover {
+    transform: translateY(-3px);
+}
+
+.payment-label {
+    display: block;
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.payment-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* Colores de estado para Cobros */
+.payment-card.paid { background: #f0fff4; border-color: #c6f6d5; }
+.payment-card.paid .payment-value { color: #2f855a; }
+
+.payment-card.debt { background: #fff5f5; border-color: #fed7d7; }
+.payment-card.debt .payment-value { color: #c53030; }
+
+.payment-card.settled { background: #ebf8ff; border-color: #bee3f8; }
+.payment-card.settled .payment-value { color: #2b6cb0; }
+
+/* --- Formulario de Nuevo Abono --- */
+.add-payment-form {
+    background: #f1f5f9;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.section-subtitle {
+    margin-top: 0;
+    font-size: 1rem;
+    color: #334155;
+    margin-bottom: 1rem;
+}
+
+.payment-inputs-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.btn-add-payment {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-add-payment:hover { background: #059669; }
+
+/* --- Tabla de Historial (Mini-table) --- */
+.mini-table-container {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.mini-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.mini-table th {
+    background: #f8fafc;
+    padding: 12px;
+    text-align: left;
+    color: #64748b;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.mini-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.method-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.method-badge.efectivo { background: #dcfce7; color: #166534; }
+.method-badge.transferencia { background: #dbeafe; color: #1e40af; }
+.method-badge.tarjeta { background: #fef9c3; color: #854d0e; }

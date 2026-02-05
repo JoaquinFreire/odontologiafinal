@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const SearchIcon = () => <span className="icon">🔍</span>;
 const UserIcon = () => <span className="icon">👤</span>;
 
 const SearchPatients = ({ searchTerm, onSearchChange }) => {
   const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setLocalSearchTerm(searchTerm);
@@ -33,7 +35,7 @@ const SearchPatients = ({ searchTerm, onSearchChange }) => {
           />
         </div>
 
-        <button className="new-patient-btn">
+        <button className="new-patient-btn" onClick={() => navigate('/newpatient')}>
           <UserIcon />
           Nuevo Paciente
         </button>
