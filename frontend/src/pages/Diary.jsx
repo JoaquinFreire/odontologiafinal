@@ -172,10 +172,19 @@ const Diary = ({ user, handleLogout }) => {
                 <div className="grid-time-label">{time}</div>
                 {weekDays.map(day => {
                   const app = appointmentMap.get(`${day.toISOString().split('T')[0]}-${time}`);
+                  const isToday = day.toDateString() === new Date().toDateString();
+                  let statusClass = 'status-next';
+                  if (app) {
+                    if (isToday) {
+                      statusClass = 'status-today';
+                    } else if (new Date(app.datetime) < new Date()) {
+                      statusClass = 'status-late';
+                    }
+                  }
                   return (
                     <div key={`${day}-${time}`} className="grid-cell" onClick={() => handleCellClick(day, time, app)}>
                       {app && (
-                        <div className={`app-chip ${app.status ? 'status-done' : new Date(app.datetime) < new Date() ? 'status-late' : day.toDateString() === new Date().toDateString() ? 'status-today' : 'status-next'}`}>
+                        <div className={`app-chip ${statusClass}`}>
                           <p className="app-name">{app.name}</p>
                           <p className="app-type">{app.type}</p>
                         </div>
