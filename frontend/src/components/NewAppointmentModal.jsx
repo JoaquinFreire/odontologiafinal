@@ -13,18 +13,33 @@ const NewAppointmentModal = ({ showModal, setShowModal, selectedSlot, formData, 
         </div>
         
         <div style={{ marginBottom: '15px', padding: '10px', background: '#f0f9ff', borderRadius: '8px', fontSize: '0.9rem' }}>
-          <strong>Fecha:</strong> {new Date(selectedSlot.date + 'T00:00:00').toLocaleDateString('es-ES')} <br/>
-          <strong>Hora:</strong> {selectedSlot.time} hs
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <div>
+              <label style={{ fontSize: '0.85rem' }}><strong>Fecha:</strong></label><br />
+              <input type="date" min={new Date().toISOString().split('T')[0]} value={formData.date || selectedSlot.date || new Date().toISOString().split('T')[0]} onChange={(e) => setFormData && setFormData(prev => ({ ...prev, date: e.target.value }))} />
+            </div>
+            <div>
+              <label style={{ fontSize: '0.85rem' }}><strong>Hora:</strong></label><br />
+              <select value={formData.time || selectedSlot.time || ''} onChange={(e) => setFormData && setFormData(prev => ({ ...prev, time: e.target.value }))}>
+                <option value="">Seleccionar...</option>
+                {Array.from({ length: (21 - 8 + 1) * 2 }, (_, i) => {
+                  const hour = 8 + Math.floor(i / 2);
+                  const minute = i % 2 === 0 ? '00' : '30';
+                  const val = `${hour.toString().padStart(2, '0')}:${minute}`;
+                  return <option key={val} value={val}>{val}</option>;
+                })}
+              </select>
+            </div>
+          </div>
         </div>
 
         <form className="appointment-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Nombre Paciente *</label>
+            <label>Nombre Paciente</label>
             <input 
               type="text" 
               value={formData.name}
               onChange={(e) => setFormData({...formData, name: e.target.value})}
-              required 
             />
           </div>
           <div className="form-group">
@@ -54,7 +69,7 @@ const NewAppointmentModal = ({ showModal, setShowModal, selectedSlot, formData, 
           </div>
 
           <div className="modal-actions" style={{marginTop: '20px'}}>
-            <button type="button" className="btn-outline" onClick={() => setShowModal(false)}>Cancelar</button>
+            <button type="button" className="btn-outline cancel" onClick={() => setShowModal(false)}>Cancelar</button>
             <button type="submit" className="btn-primary" disabled={loading}>
               {loading ? 'Guardando...' : 'Confirmar Turno'}
             </button>
