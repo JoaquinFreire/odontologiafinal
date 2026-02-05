@@ -20,7 +20,7 @@ const ADULTO_LOWER = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37
 const NINO_UPPER = [55, 54, 53, 52, 51, 61, 62, 63, 64, 65];
 const NINO_LOWER = [85, 84, 83, 82, 81, 71, 72, 73, 74, 75];
 
-const ToolGroup = ({ title, tools, selectedTool, onSelect }) => (
+const ToolGroup = ({ title, tools, selectedTool, onSelect, disabled = false }) => (
   <div className="tool-group">
     <h4>{title}</h4>
     <div className="button-row">
@@ -29,6 +29,7 @@ const ToolGroup = ({ title, tools, selectedTool, onSelect }) => (
           key={t.id} 
           className={`tool-btn-large ${selectedTool === t.id ? 'active' : ''} ${t.className || ''}`}
           onClick={() => onSelect(t.id)}
+          disabled={disabled}
         >
           {t.label}
         </button>
@@ -72,7 +73,7 @@ const SingleTooth = ({ id, x, y, data, onInteraction, isSelected }) => {
   );
 };
 
-const Odontograma = ({ initialData, onDataChange }) => {
+const Odontograma = ({ initialData, onDataChange, isReadOnly = false }) => {
   const [view, setView] = useState('adult'); 
   const [data, setData] = useState(initialData || {
     adult: { teethState: {}, connections: [] },
@@ -96,6 +97,9 @@ const Odontograma = ({ initialData, onDataChange }) => {
   }, [initialData]);
 
   const updateData = (newData) => {
+    // Si es read-only, no permitir cambios
+    if (isReadOnly) return;
+    
     setData(newData);
     if (onDataChange) {
       onDataChange(newData);
@@ -121,6 +125,9 @@ const Odontograma = ({ initialData, onDataChange }) => {
   };
 
   const handleToothInteraction = (e, id) => {
+    // Si está en modo lectura, no permitir interacciones
+    if (isReadOnly) return;
+    
     const targetId = e.target.id;
     const viewData = data[view];
 
@@ -159,18 +166,18 @@ const Odontograma = ({ initialData, onDataChange }) => {
   return (
     <div className="odontograma-app">
       <div className="view-selector">
-        <button className={`view-btn ${view === 'adult' ? 'active' : ''}`} onClick={() => {setView('adult'); setInteractionStep(null);}}>Adulto</button>
-        <button className={`view-btn ${view === 'child' ? 'active' : ''}`} onClick={() => {setView('child'); setInteractionStep(null);}}>Niño</button>
+        <button className={`view-btn ${view === 'adult' ? 'active' : ''}`} onClick={() => {setView('adult'); setInteractionStep(null);}} disabled={isReadOnly}>Adulto</button>
+        <button className={`view-btn ${view === 'child' ? 'active' : ''}`} onClick={() => {setView('child'); setInteractionStep(null);}} disabled={isReadOnly}>Niño</button>
       </div>
 
       <div className="controls-panel">
-        <ToolGroup title="Básico" tools={[{id: 'cursor', label: 'Cursor'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} />
-        <ToolGroup title="Caries/Obt." tools={[{id: 'face_red', label: '●', className: 'text-red'}, {id: 'face_blue', label: '●', className: 'text-blue'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} />
-        <ToolGroup title="Coronas" tools={[{id: 'crown_red', label: '○', className: 'text-red'}, {id: 'crown_blue', label: '○', className: 'text-blue'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} />
-        <ToolGroup title="Pieza Aus." tools={[{id: 'missing_red', label: 'X', className: 'text-red'}, {id: 'missing_blue', label: 'X', className: 'text-blue'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} />
-        <ToolGroup title="TC / Imp" tools={[{id: 'tc_red', label: 'Tc', className: 'text-red'}, {id: 'tc_blue', label: 'Tc', className: 'text-blue'}, {id: 'imp_red', label: 'I', className: 'text-red'}, {id: 'imp_blue', label: 'I', className: 'text-blue'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} />
-        <ToolGroup title="Prót. Fija" tools={[{id: 'bridge_fixed_red', label: '▭', className: 'text-red'}, {id: 'bridge_fixed_blue', label: '▭', className: 'text-blue'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} />
-        <ToolGroup title="Prót. Rem." tools={[{id: 'bridge_removable_red', label: '⟷', className: 'text-red'}, {id: 'bridge_removable_blue', label: '⟷', className: 'text-blue'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} />
+        <ToolGroup title="Básico" tools={[{id: 'cursor', label: 'Cursor'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} disabled={isReadOnly} />
+        <ToolGroup title="Caries/Obt." tools={[{id: 'face_red', label: '●', className: 'text-red'}, {id: 'face_blue', label: '●', className: 'text-blue'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} disabled={isReadOnly} />
+        <ToolGroup title="Coronas" tools={[{id: 'crown_red', label: '○', className: 'text-red'}, {id: 'crown_blue', label: '○', className: 'text-blue'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} disabled={isReadOnly} />
+        <ToolGroup title="Pieza Aus." tools={[{id: 'missing_red', label: 'X', className: 'text-red'}, {id: 'missing_blue', label: 'X', className: 'text-blue'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} disabled={isReadOnly} />
+        <ToolGroup title="TC / Imp" tools={[{id: 'tc_red', label: 'Tc', className: 'text-red'}, {id: 'tc_blue', label: 'Tc', className: 'text-blue'}, {id: 'imp_red', label: 'I', className: 'text-red'}, {id: 'imp_blue', label: 'I', className: 'text-blue'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} disabled={isReadOnly} />
+        <ToolGroup title="Prót. Fija" tools={[{id: 'bridge_fixed_red', label: '▭', className: 'text-red'}, {id: 'bridge_fixed_blue', label: '▭', className: 'text-blue'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} disabled={isReadOnly} />
+        <ToolGroup title="Prót. Rem." tools={[{id: 'bridge_removable_red', label: '⟷', className: 'text-red'}, {id: 'bridge_removable_blue', label: '⟷', className: 'text-blue'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} disabled={isReadOnly} />
       </div>
 
       <div className="svg-container">
@@ -225,6 +232,7 @@ const Odontograma = ({ initialData, onDataChange }) => {
             value={data.elementos_dentarios || ''}
             onChange={(e) => updateData({...data, elementos_dentarios: e.target.value})}
             placeholder="Ej: 32"
+            disabled={isReadOnly}
           />
         </div>
         <div className="field-group">
@@ -235,8 +243,14 @@ const Odontograma = ({ initialData, onDataChange }) => {
             onChange={(e) => updateData({...data, observaciones: e.target.value})}
             placeholder="Observaciones del odontograma..."
             rows="5"
+            disabled={isReadOnly}
           />
         </div>
+        {isReadOnly && (
+          <div className="readonly-notice">
+            ℹ️ Esta versión anterior es de solo lectura. Solo puedes ver los datos.
+          </div>
+        )}
       </div>
     </div>
   );

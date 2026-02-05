@@ -9,7 +9,7 @@ const Consentimiento = ({ patientData, user, consentData, setConsentData, initia
     if (user?.name || user?.tuition) {
       setConsentData(prev => ({
         ...prev,
-        doctorName: user?.name || '',
+        doctorName: `${user?.name || ''} ${user?.lastname || ''}`.trim() || '',
         doctorMatricula: user?.tuition || ''
       }));
     }
@@ -67,9 +67,9 @@ const Consentimiento = ({ patientData, user, consentData, setConsentData, initia
               <input
                 type="text"
                 id="doctorName"
-                value={consentData.doctorName || user?.name || ''}
-                readOnly
-                placeholder="Se completa automáticamente"
+                value={consentData.doctorName || ''}
+                onChange={(e) => handleConsentChange('doctorName', e.target.value)}
+                placeholder="Nombre y apellido del odontólogo"
               />
             </div>
             <div className="form-group">
@@ -77,9 +77,9 @@ const Consentimiento = ({ patientData, user, consentData, setConsentData, initia
               <input
                 type="text"
                 id="doctorMatricula"
-                value={consentData.doctorMatricula || user?.tuition || ''}
-                readOnly
-                placeholder="Se completa automáticamente"
+                value={consentData.doctorMatricula || ''}
+                onChange={(e) => handleConsentChange('doctorMatricula', e.target.value)}
+                placeholder="Número de matrícula"
               />
             </div>
           </div>

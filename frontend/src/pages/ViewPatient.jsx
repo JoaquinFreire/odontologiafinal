@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import '../styles/ViewPatient.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import SearchPatients from '../components/SearchPatients';
 import PaginationControls from '../components/PaginationControls';
@@ -19,10 +19,16 @@ const ViewPatient = ({ setIsAuthenticated, user, setUser }) => {
     const [totalPages, setTotalPages] = useState(1);
     const [totalPatients, setTotalPatients] = useState(0);
     const [patientsPerPage] = useState(10);
+    const [searchParams] = useSearchParams();
 
     useEffect(() => {
         document.title = 'Ver Pacientes';
-    }, []);
+        // Obtener el término de búsqueda de la URL si existe
+        const searchFromUrl = searchParams.get('search');
+        if (searchFromUrl) {
+            setSearchTerm(searchFromUrl);
+        }
+    }, [searchParams]);
 
     // Modales
     const [showPatientDetails, setShowPatientDetails] = useState(false);

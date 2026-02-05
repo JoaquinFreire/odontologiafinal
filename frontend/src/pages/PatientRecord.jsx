@@ -14,7 +14,6 @@ import {
   Check,
   Save,
   Printer,
-  Download,
   AlertCircle
 } from 'lucide-react';
 import NavBar from '../components/NavBar';
@@ -153,6 +152,7 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
 
   const validateRequiredData = () => {
     const patientErrors = [];
+    const consentErrors = [];
 
     // Validar datos personales obligatorios
     if (!patientData.name) patientErrors.push('Nombre');
@@ -160,9 +160,15 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
     if (!patientData.dni) patientErrors.push('DNI');
     if (!patientData.birthDate) patientErrors.push('Fecha de Nacimiento');
 
+    // Validar consentimiento obligatorio
+    if (!consentData.accepted) consentErrors.push('Aceptar el consentimiento');
+    if (!consentData.doctorName) consentErrors.push('Nombre del Doctor');
+
     return {
-      isValid: patientErrors.length === 0,
-      patientErrors
+      isValid: patientErrors.length === 0 && consentErrors.length === 0,
+      patientErrors,
+      consentErrors,
+      hasErrors: patientErrors.length > 0 || consentErrors.length > 0
     };
   };
 
@@ -173,16 +179,31 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
     const validation = validateRequiredData();
 
     if (!validation.isValid) {
+      let missingSection = '';
       let errorMsg = '✗ Campos requeridos incompletos:\n\n';
       
       if (validation.patientErrors.length > 0) {
         errorMsg += `Datos Personales: ${validation.patientErrors.join(', ')}\n`;
+        missingSection = 'datos';
+      }
+      
+      if (validation.consentErrors.length > 0) {
+        errorMsg += `Consentimiento: ${validation.consentErrors.join(', ')}\n`;
+        missingSection = 'consentimiento';
       }
 
       setMessage({ 
         type: 'error', 
         text: errorMsg.replace(/\n/g, ' | ') 
       });
+      
+      // Auto-dirigirse a la sección que falta
+      if (missingSection) {
+        setTimeout(() => {
+          setActiveTab(missingSection);
+        }, 500);
+      }
+      
       setLoading(false);
       return;
     }
@@ -201,8 +222,10 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
           text: `✓ ${result.message}` 
         });
         setTimeout(() => {
-          navigate('/dashboard');
-        }, 2000);
+          // Redirigir a ViewPatient con búsqueda automática del paciente
+          const searchTerm = patientData.name;
+          navigate(`/patients?search=${encodeURIComponent(searchTerm)}`);
+        }, 1500);
       } else {
         setMessage({ 
           type: 'error', 
@@ -359,9 +382,14 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
                 <Printer size={18} />
                 <span>Imprimir Ficha</span>
               </button>
-              <button className="btn-primary">
-                <Download size={18} />
-                <span>Exportar PDF</span>
+              <button 
+                className="btn-primary"
+                onClick={handleSaveAll}
+                disabled={loading || activeTab !== 'consentimiento'}
+                title={activeTab !== 'consentimiento' ? 'Completa todas las secciones para guardar' : 'Guardar paciente'}
+              >
+                <Save size={18} />
+                <span>{loading ? 'Guardando...' : 'Guardar Todo'}</span>
               </button>
             </div>
           </div>
@@ -395,7 +423,7 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
             {renderContent()}
           </div>
 
-          {/* Progreso */}
+          {/* Navegación y Progreso */}
           <div className="progress-footer">
             <div className="progress-info">
               <div className="progress-bar">
@@ -409,14 +437,34 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
               </span>
             </div>
             <div className="progress-actions">
-              <button 
-                className="btn-primary"
-                onClick={handleSaveAll}
-                disabled={loading}
-              >
-                <Save size={18} />
-                <span>{loading ? 'Guardando...' : 'Guardar Todo'}</span>
-              </button>
+              {tabs.findIndex(tab => tab.id === activeTab) > 0 && (
+                <button
+                  className="btn-secondary"
+                  onClick={() => {
+                    const currentIndex = tabs.findIndex(tab => tab.id === activeTab);
+                    if (currentIndex > 0) {
+                      setActiveTab(tabs[currentIndex - 1].id);
+                    }
+                  }}
+                >
+                  <ChevronLeft size={18} />
+                  <span>Anterior</span>
+                </button>
+              )}
+              {tabs.findIndex(tab => tab.id === activeTab) < tabs.length - 1 && (
+                <button
+                  className="btn-secondary"
+                  onClick={() => {
+                    const currentIndex = tabs.findIndex(tab => tab.id === activeTab);
+                    if (currentIndex < tabs.length - 1) {
+                      setActiveTab(tabs[currentIndex + 1].id);
+                    }
+                  }}
+                >
+                  <span>Siguiente</span>
+                  <ChevronRight size={18} />
+                </button>
+              )}
             </div>
           </div>
         </div>

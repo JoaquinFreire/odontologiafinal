@@ -64,10 +64,10 @@
   margin: 0 auto 15px auto;
 }
 .logo-icon2 {
-  width: 70px;
+  width: 50px;
   height: auto;
   display: block;
-  animation: bounce 2s infinite;
+  animation: spin 3s infinite;
   margin: 0 auto;
 }
 
