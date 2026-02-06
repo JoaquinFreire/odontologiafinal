@@ -10,6 +10,7 @@ const EditAppointmentModal = ({ showModal, setShowModal, appointment, onSave, on
     date: '',
     time: ''
   });
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   useEffect(() => {
     if (appointment) {
@@ -34,9 +35,7 @@ const EditAppointmentModal = ({ showModal, setShowModal, appointment, onSave, on
   };
 
   const handleDelete = () => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este turno?')) {
-      onDelete(appointment.id);
-    }
+    setShowConfirmDelete(true);
   };
 
   if (!showModal || !appointment) return null;
@@ -119,6 +118,23 @@ const EditAppointmentModal = ({ showModal, setShowModal, appointment, onSave, on
           </div>
         </form>
       </div>
+      {showConfirmDelete && (
+        <div className="modal-overlay" onClick={() => setShowConfirmDelete(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>¿Estás seguro?</h3>
+              <button className="modal-close" onClick={() => setShowConfirmDelete(false)}><X size={20}/></button>
+            </div>
+            <div style={{ padding: '16px' }}>
+              <p>Esta acción eliminará el turno permanentemente. ¿Deseas continuar?</p>
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '16px' }}>
+                <button className="btn-outline" onClick={() => setShowConfirmDelete(false)}>Cancelar</button>
+                <button className="btn-primary" onClick={() => { setShowConfirmDelete(false); onDelete(appointment.id); }}>Eliminar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

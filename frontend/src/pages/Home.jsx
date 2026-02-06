@@ -18,6 +18,8 @@ const Home = ({ user, handleLogout }) => {
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   useEffect(() => {
     document.title = 'Home';
@@ -36,7 +38,7 @@ const Home = ({ user, handleLogout }) => {
 
   const [formData, setFormData] = useState({
     name: '',
-    date: '',
+    date: todayStr,
     time: '',
     type: '',
     dni: '',
@@ -88,12 +90,12 @@ const Home = ({ user, handleLogout }) => {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setFormData({ name: '', date: '', time: '', type: '', dni: '', price: '', payment_method: '' });
+    setFormData({ name: '', date: todayStr, time: '', type: '', dni: '', price: '', payment_method: '' });
   };
 
   const handleSubmitAppointment = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.date || !formData.time || !formData.type) {
+    if (!formData.date || !formData.time || !formData.type) {
       alert('Por favor completa todos los campos obligatorios');
       return;
     }
@@ -101,7 +103,7 @@ const Home = ({ user, handleLogout }) => {
     try {
       // Por ahora solo visual, podrías comentar la línea de abajo si no quieres que guarde en DB aún
       await appointmentService.createAppointment(formData, user.id);
-      setSuccessMessage(`Turno agendado para ${formData.name}`);
+      setSuccessMessage(formData.name ? `Turno agendado para ${formData.name}` : 'Turno agendado correctamente');
       setShowSuccessModal(true);
       handleCloseModal();
       setTimeout(() => {
@@ -120,7 +122,12 @@ const Home = ({ user, handleLogout }) => {
     try {
       setMarkingComplete(id);
       await appointmentService.markAppointmentAsCompleted(id);
-      loadAllAppointmentData();
+      setSuccessMessage('Turno marcado como atendido');
+      setShowSuccessModal(true);
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        loadAllAppointmentData();
+      }, 2000);
     } catch (error) {
       alert('Error al marcar como completado');
     } finally {
@@ -128,18 +135,33 @@ const Home = ({ user, handleLogout }) => {
     }
   };
   const handleDeleteAppointment = async (id) => {
-    if (confirm('¿Estás seguro de eliminar este turno?')) {
-      try {
-        await appointmentService.deleteAppointment(id);
+    setConfirmDeleteId(id);
+    setShowConfirmDelete(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!confirmDeleteId) return;
+    try {
+      await appointmentService.deleteAppointment(confirmDeleteId);
+      setShowConfirmDelete(false);
+      setConfirmDeleteId(null);
+      setSuccessMessage('Turno eliminado');
+      setShowSuccessModal(true);
+      setTimeout(() => {
+        setShowSuccessModal(false);
         loadAllAppointmentData();
-      } catch (error) {
-        alert('Error al eliminar turno');
-      }
+      }, 2000);
+    } catch (error) {
+      alert('Error al eliminar turno');
     }
   };
   const handleOpenRescheduleModal = (app) => {
+    if (!app) return;
+    const dt = new Date(app.datetime || app.date || Date.now());
+    const date = dt.toISOString().split('T')[0];
+    const time = dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
     setSelectedAppointmentToReschedule(app);
-    setRescheduleForm({ date: app.date, time: app.time });
+    setRescheduleForm({ date, time });
     setShowRescheduleModal(true);
   };
 
@@ -154,7 +176,12 @@ const Home = ({ user, handleLogout }) => {
         dni: selectedAppointmentToReschedule.dni
       });
       setShowRescheduleModal(false);
-      loadAllAppointmentData();
+      setSuccessMessage('Turno reprogramado correctamente');
+      setShowSuccessModal(true);
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        loadAllAppointmentData();
+      }, 2000);
     } catch (error) {
       alert('Error al reprogramar');
     }
@@ -178,7 +205,7 @@ const Home = ({ user, handleLogout }) => {
               <p style={{ color: '#666', marginTop: '8px' }}>Hoy es {obtenerFechaActual()}</p>
             </div>
             <button className="btn-primary" onClick={() => setShowModal(true)}>
-              <PlusCircle size={18} /> <span>Agendar turno</span>
+              <PlusCircle size={18}  /> <span>&nbsp;Agendar turno</span>
             </button>
           </div>
 
@@ -261,7 +288,15 @@ const Home = ({ user, handleLogout }) => {
                 </div>
                 <div className="form-group">
                   <label>Hora *</label>
-                  <input type="time" name="time" value={formData.time} onChange={handleFormChange} required disabled={loading} />
+                  <select name="time" value={formData.time} onChange={handleFormChange} required disabled={loading}>
+                    <option value="">Seleccionar...</option>
+                    {Array.from({ length: (21 - 8 + 1) * 2 }, (_, i) => {
+                      const hour = 8 + Math.floor(i / 2);
+                      const minute = i % 2 === 0 ? '00' : '30';
+                      const val = `${hour.toString().padStart(2, '0')}:${minute}`;
+                      return <option key={val} value={val}>{val}</option>;
+                    })}
+                  </select>
                 </div>
               </div>
 
@@ -282,43 +317,10 @@ const Home = ({ user, handleLogout }) => {
                 )}
               </div>
 
-              {/* SECCIÓN DE PAGO (VISUAL) */}
-              <div className="payment-section">
-                <p className="payment-title">Información de Cobro (Opcional)</p>
-                <div className="payment-grid">
-                  <div className="form-group">
-                    <label><DollarSign size={14} /> Valor</label>
-                    <input
-                      type="number"
-                      name="price"
-                      className="payment-input"
-                      step="0.01"
-                      placeholder="0.00"
-                      value={formData.price}
-                      onChange={handleFormChange}
-                      disabled={loading}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label><CreditCard size={14} /> Forma de pago</label>
-                    <select
-                      name="payment_method"
-                      className="payment-input"
-                      value={formData.payment_method}
-                      onChange={handleFormChange}
-                      disabled={loading}
-                    >
-                      <option value="">Seleccionar...</option>
-                      <option value="Efectivo">Efectivo</option>
-                      <option value="Tarjeta">Tarjeta</option>
-                      <option value="Transferencia">Transferencia</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
+              {/* Payment section removed per request */}
 
               <div className="modal-actions" style={{ marginTop: '20px' }}>
-                <button type="button" className="btn-outline" onClick={handleCloseModal} disabled={loading}>Cancelar</button>
+                <button type="button" className="btn-outline cancel" onClick={handleCloseModal} disabled={loading}>Cancelar</button>
                 <button type="submit" className="btn-primary" disabled={loading}>{loading ? 'Agendando...' : 'Agendar Turno'}</button>
               </div>
             </form>
@@ -348,6 +350,32 @@ const Home = ({ user, handleLogout }) => {
                   <button type="submit">Reprogramar</button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+      {showSuccessModal && (
+        <div className="success-overlay">
+          <div className="success-card">
+            <CheckCircle size={40} color="#22c55e" />
+            <h3>Operación Exitosa</h3>
+            <p>{successMessage}</p>
+          </div>
+        </div>
+      )}
+      {showConfirmDelete && (
+        <div className="modal-overlay" onClick={() => setShowConfirmDelete(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>¿Estás seguro?</h3>
+              <button className="modal-close" onClick={() => setShowConfirmDelete(false)}>&times;</button>
+            </div>
+            <div style={{ padding: '16px' }}>
+              <p>Esta acción eliminará el turno permanentemente. ¿Deseas continuar?</p>
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '16px' }}>
+                <button className="btn-outline cancel" onClick={() => setShowConfirmDelete(false)}>Cancelar</button>
+                <button className="btn-primary" onClick={confirmDelete}>Eliminar</button>
+              </div>
             </div>
           </div>
         </div>

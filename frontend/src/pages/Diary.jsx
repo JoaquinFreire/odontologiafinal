@@ -55,15 +55,17 @@ const Diary = ({ user, handleLogout }) => {
         const dt = new Date(app.datetime);
         const dateKey = dt.toISOString().split('T')[0];
         const timeKey = dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-        map.set(`${dateKey}-${timeKey}`, app);
+        const key = `${dateKey}-${timeKey}`;
+        if (!map.has(key)) map.set(key, []);
+        map.get(key).push(app);
       });
       setAppointmentMap(map);
     } catch (err) { console.error(err); } finally { setLoading(false); }
   };
 
-  const handleCellClick = (day, time, app) => {
-    if (app) {
-      setSelectedAppointment(app);
+  const handleCellClick = (day, time, apps) => {
+    if (apps && apps.length > 0) {
+      setSelectedAppointment(apps[0]);
       setShowEditModal(true);
       return;
     }
@@ -80,10 +82,12 @@ const Diary = ({ user, handleLogout }) => {
     if (e) e.preventDefault();
     try {
       setLoading(true);
+      const date = formData.date || selectedSlot.date;
+      const time = formData.time || selectedSlot.time;
       await appointmentService.createAppointment({
         ...formData,
-        date: selectedSlot.date,
-        time: selectedSlot.time
+        date,
+        time
       }, user.id);
 
       setShowModal(false);
@@ -171,22 +175,24 @@ const Diary = ({ user, handleLogout }) => {
               <React.Fragment key={time}>
                 <div className="grid-time-label">{time}</div>
                 {weekDays.map(day => {
-                  const app = appointmentMap.get(`${day.toISOString().split('T')[0]}-${time}`);
+                  const key = `${day.toISOString().split('T')[0]}-${time}`;
+                  const apps = appointmentMap.get(key) || [];
                   const isToday = day.toDateString() === new Date().toDateString();
-                  let statusClass = 'status-next';
-                  if (app) {
-                    if (isToday) {
-                      statusClass = 'status-today';
-                    } else if (new Date(app.datetime) < new Date()) {
-                      statusClass = 'status-late';
-                    }
-                  }
                   return (
-                    <div key={`${day}-${time}`} className="grid-cell" onClick={() => handleCellClick(day, time, app)}>
-                      {app && (
-                        <div className={`app-chip ${statusClass}`}>
-                          <p className="app-name">{app.name}</p>
-                          <p className="app-type">{app.type}</p>
+                    <div key={`${day}-${time}`} className="grid-cell" onClick={() => handleCellClick(day, time, apps)}>
+                      {apps.length > 0 && (
+                        <div className="app-stack">
+                          {apps.map((app, idx) => {
+                            let statusClass = 'status-next';
+                            if (isToday) statusClass = 'status-today';
+                            else if (new Date(app.datetime) < new Date()) statusClass = 'status-late';
+                            return (
+                              <div key={app.id || idx} className={`app-chip ${statusClass}`}>
+                                <p className="app-name">{app.name}</p>
+                                <p className="app-type">{app.type}</p>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
