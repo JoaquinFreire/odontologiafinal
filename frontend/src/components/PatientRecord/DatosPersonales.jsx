@@ -1,14 +1,26 @@
 // components/PatientRecord/DatosPersonales.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import { Phone, Mail, Home, Briefcase, FileText } from 'lucide-react';
 
 const DatosPersonales = ({ patientData, setPatientData, readOnlyFields = [] }) => {
+  const [errors, setErrors] = useState({});
+
   const handleInputChange = (field, value) => {
     if (readOnlyFields.includes(field)) return; // No cambiar si es readonly
     setPatientData(prev => ({
       ...prev,
       [field]: value
     }));
+    // Clear field error on change
+    setErrors(prev => {
+      const copy = { ...prev };
+      delete copy[field];
+      return copy;
+    });
+  };
+
+  const setFieldError = (field, message) => {
+    setErrors(prev => ({ ...prev, [field]: message }));
   };
 
   const handleInsuranceChange = (field, value) => {
@@ -37,11 +49,12 @@ const DatosPersonales = ({ patientData, setPatientData, readOnlyFields = [] }) =
               type="text"
               id="name"
               value={patientData.name || ''}
-              onChange={(e) => handleInputChange('name', e.target.value)}
+              onChange={(e) => handleInputChange('name', e.target.value.replace(/[0-9]/g, ''))}
               placeholder="Nombre"
               readOnly={isReadOnly('name')}
               className={isReadOnly('name') ? 'readonly' : ''}
             />
+            {errors.name && <div className="field-error">{errors.name}</div>}
           </div>
           <div className="form-group">
             <label htmlFor="lastname">Apellido *</label>
@@ -49,11 +62,12 @@ const DatosPersonales = ({ patientData, setPatientData, readOnlyFields = [] }) =
               type="text"
               id="lastname"
               value={patientData.lastname || ''}
-              onChange={(e) => handleInputChange('lastname', e.target.value)}
+              onChange={(e) => handleInputChange('lastname', e.target.value.replace(/[0-9]/g, ''))}
               placeholder="Apellido"
               readOnly={isReadOnly('lastname')}
               className={isReadOnly('lastname') ? 'readonly' : ''}
             />
+            {errors.lastname && <div className="field-error">{errors.lastname}</div>}
           </div>
           <div className="form-group">
             <label htmlFor="dni">DNI *</label>
@@ -63,12 +77,13 @@ const DatosPersonales = ({ patientData, setPatientData, readOnlyFields = [] }) =
                 type="text"
                 id="dni"
                 value={patientData.dni || ''}
-                onChange={(e) => handleInputChange('dni', e.target.value)}
+                onChange={(e) => handleInputChange('dni', e.target.value.replace(/\D/g, ''))}
                 placeholder="DNI sin puntos"
                 readOnly={isReadOnly('dni')}
                 className={isReadOnly('dni') ? 'readonly' : ''}
                 maxLength="12"
               />
+              {errors.dni && <div className="field-error">{errors.dni}</div>}
             </div>
           </div>
         </div>
@@ -93,11 +108,12 @@ const DatosPersonales = ({ patientData, setPatientData, readOnlyFields = [] }) =
                 type="tel"
                 id="phone"
                 value={patientData.phone || ''}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
+                onChange={(e) => handleInputChange('phone', e.target.value.replace(/[^0-9+\s-]/g, ''))}
                 placeholder="+1 234 567 890"
                 readOnly={isReadOnly('phone')}
                 className={isReadOnly('phone') ? 'readonly' : ''}
               />
+              {errors.phone && <div className="field-error">{errors.phone}</div>}
             </div>
           </div>
         </div>
@@ -112,10 +128,17 @@ const DatosPersonales = ({ patientData, setPatientData, readOnlyFields = [] }) =
                 id="email"
                 value={patientData.email || ''}
                 onChange={(e) => handleInputChange('email', e.target.value)}
+                onBlur={(e) => {
+                  const val = e.target.value;
+                  if (val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+                    setFieldError('email', 'Email inválido');
+                  }
+                }}
                 placeholder="email@ejemplo.com"
                 readOnly={isReadOnly('email')}
                 className={isReadOnly('email') ? 'readonly' : ''}
               />
+              {errors.email && <div className="field-error">{errors.email}</div>}
             </div>
           </div>
           <div className="form-group">
@@ -144,11 +167,12 @@ const DatosPersonales = ({ patientData, setPatientData, readOnlyFields = [] }) =
                 type="text"
                 id="occupation"
                 value={patientData.occupation || ''}
-                onChange={(e) => handleInputChange('occupation', e.target.value)}
+                onChange={(e) => handleInputChange('occupation', e.target.value.replace(/[0-9]/g, ''))}
                 placeholder="Profesión u oficio"
                 readOnly={isReadOnly('occupation')}
                 className={isReadOnly('occupation') ? 'readonly' : ''}
               />
+              {errors.occupation && <div className="field-error">{errors.occupation}</div>}
             </div>
           </div>
         </div>
@@ -162,12 +186,13 @@ const DatosPersonales = ({ patientData, setPatientData, readOnlyFields = [] }) =
                 type="text"
                 id="insuranceNumber"
                 value={patientData.healthInsurance?.number || ''}
-                onChange={(e) => handleInsuranceChange('number', e.target.value)}
+                onChange={(e) => handleInsuranceChange('number', e.target.value.replace(/\D/g, ''))}
                 placeholder="Número de afiliado"
                 readOnly={isReadOnly('healthInsurance.number')}
                 className={isReadOnly('healthInsurance.number') ? 'readonly' : ''}
                 maxLength="12"
               />
+              {errors.healthInsurance && <div className="field-error">{errors.healthInsurance}</div>}
             </div>
             <div className="form-group checkbox-group">
               <label className="checkbox-label">

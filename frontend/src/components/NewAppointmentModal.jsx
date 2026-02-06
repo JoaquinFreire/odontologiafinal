@@ -68,6 +68,18 @@ const NewAppointmentModal = ({ showModal, setShowModal, selectedSlot, formData, 
             </select>
           </div>
 
+          {formData.type === 'Otro' && (
+            <div className="form-group">
+              <label>Describir Tratamiento *</label>
+              <textarea
+                value={formData.other_treatment || ''}
+                onChange={(e) => setFormData({...formData, other_treatment: e.target.value})}
+                placeholder="Describa el tratamiento a realizar"
+                required
+              />
+            </div>
+          )}
+
           <div className="modal-actions" style={{marginTop: '20px'}}>
             <button type="button" className="btn-outline cancel" onClick={() => setShowModal(false)}>Cancelar</button>
             <button type="submit" className="btn-primary" disabled={loading}>
