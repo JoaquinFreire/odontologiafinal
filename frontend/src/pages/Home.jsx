@@ -277,8 +277,8 @@ const Home = ({ user, handleLogout }) => {
             </div>
             <form className="appointment-form" onSubmit={handleSubmitAppointment}>
               <div className="form-group">
-                <label>Nombre completo *</label>
-                <input type="text" name="name" value={formData.name} onChange={handleFormChange} required disabled={loading} />
+                <label>Nombre completo</label>
+                <input type="text" name="name" value={formData.name} onChange={handleFormChange} disabled={loading} />
               </div>
 
               <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
@@ -317,7 +317,10 @@ const Home = ({ user, handleLogout }) => {
                 )}
               </div>
 
-              {/* Payment section removed per request */}
+              <div className="form-group">
+                <label>DNI</label>
+                <input type="number" name="dni" value={formData.dni} onChange={handleFormChange} disabled={loading} />
+              </div>
 
               <div className="modal-actions" style={{ marginTop: '20px' }}>
                 <button type="button" className="btn-outline cancel" onClick={handleCloseModal} disabled={loading}>Cancelar</button>
