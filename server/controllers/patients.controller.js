@@ -364,9 +364,7 @@ const saveCompletePatient = async (req, res) => {
       patient_id: newPatientId,
       text: `En este acto, yo ${patientData.name} ${patientData.lastname} DNI ${patientData.dni} autorizo a Od ${consentData.doctorName || 'No especificado'} M.P. ${consentData.doctorMatricula || 'No especificada'} y/o asociados o ayudantes a realizar el tratamiento informado, conversado con el profesional sobre la naturaleza y propósito del tratamiento, sobre la posibilidad de complicaciones, los riesgos y administración de anestesia local, práctica, radiografías y otros métodos de diagnóstico.`,
       datetime: consentData.datetime || new Date().toISOString(),
-      accepted: consentData.accepted || false,
-      doctorName: consentData.doctorName || '',
-      doctorMatricula: consentData.doctorMatricula || ''
+      accepted: consentData.accepted || false
     };
 
     const consentFields = Object.keys(consentPayload).join(', ');
