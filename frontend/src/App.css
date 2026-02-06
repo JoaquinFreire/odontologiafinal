@@ -37,9 +37,8 @@ body {
 .logo {
   display: flex;
   align-items: center;
-  gap: 12px;
   margin-bottom: 8px;
-}
+} 
 
 .logo-icon {
   font-size: 32px;
@@ -518,7 +517,7 @@ body {
 /* Content Grid */
 .content-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 24px;
 }
 
@@ -1215,7 +1214,6 @@ body {
   }
 
   .logo {
-    gap: 10px;
     margin-bottom: 4px;
   }
 
