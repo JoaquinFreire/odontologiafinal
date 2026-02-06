@@ -41,7 +41,8 @@ const Home = ({ user, handleLogout }) => {
     type: '',
     dni: '',
     price: '',
-    payment_method: ''
+    payment_method: '',
+    other_treatment: ''
   });
 
   const navigate = useNavigate();
@@ -273,6 +274,12 @@ const Home = ({ user, handleLogout }) => {
                   <option value="Ortodoncia">Ortodoncia</option>
                   <option value="Otro">Otro</option>
                 </select>
+                {formData.type === 'Otro' && (
+                  <div className="form-group">
+                    <label>Describir Tratamiento *</label>
+                    <textarea name="other_treatment" value={formData.other_treatment} onChange={handleFormChange} placeholder="Describa el tratamiento" required />
+                  </div>
+                )}
               </div>
 
               {/* SECCIÓN DE PAGO (VISUAL) */}

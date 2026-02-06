@@ -16,7 +16,7 @@ const Diary = ({ user, handleLogout }) => {
 
   const [showModal, setShowModal] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState({ date: '', time: '' });
-  const [formData, setFormData] = useState({ name: '', dni: '', type: '' });
+  const [formData, setFormData] = useState({ name: '', dni: '', type: '', other_treatment: '' });
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -70,7 +70,7 @@ const Diary = ({ user, handleLogout }) => {
     const dateStr = day.toISOString().split('T')[0];
     if (dateStr < new Date().toISOString().split('T')[0]) return;
     setSelectedSlot({ date: dateStr, time: time });
-    setFormData({ name: '', dni: '', type: '' });
+    setFormData({ name: '', dni: '', type: '', other_treatment: '' });
     setShowModal(true);
   };
 
