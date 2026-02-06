@@ -12,24 +12,32 @@ const NewAppointmentModal = ({ showModal, setShowModal, selectedSlot, formData, 
           <button className="modal-close" onClick={() => setShowModal(false)}><X size={20}/></button>
         </div>
         
-        <div style={{ marginBottom: '15px', padding: '10px', background: '#f0f9ff', borderRadius: '8px', fontSize: '0.9rem' }}>
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <div>
-              <label style={{ fontSize: '0.85rem' }}><strong>Fecha:</strong></label><br />
-              <input type="date" min={new Date().toISOString().split('T')[0]} value={formData.date || selectedSlot.date || new Date().toISOString().split('T')[0]} onChange={(e) => setFormData && setFormData(prev => ({ ...prev, date: e.target.value }))} />
-            </div>
-            <div>
-              <label style={{ fontSize: '0.85rem' }}><strong>Hora:</strong></label><br />
-              <select value={formData.time || selectedSlot.time || ''} onChange={(e) => setFormData && setFormData(prev => ({ ...prev, time: e.target.value }))}>
-                <option value="">Seleccionar...</option>
-                {Array.from({ length: (21 - 8 + 1) * 2 }, (_, i) => {
-                  const hour = 8 + Math.floor(i / 2);
-                  const minute = i % 2 === 0 ? '00' : '30';
-                  const val = `${hour.toString().padStart(2, '0')}:${minute}`;
-                  return <option key={val} value={val}>{val}</option>;
-                })}
-              </select>
-            </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+          <div className="form-group">
+            <label><strong>Fecha *</strong></label>
+            <input 
+              type="date" 
+              min={new Date().toISOString().split('T')[0]} 
+              value={formData.date || selectedSlot.date || new Date().toISOString().split('T')[0]} 
+              onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))} 
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label><strong>Hora *</strong></label>
+            <select 
+              value={formData.time || selectedSlot.time || ''} 
+              onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
+              required
+            >
+              <option value="">Seleccionar...</option>
+              {Array.from({ length: (21 - 8 + 1) * 2 }, (_, i) => {
+                const hour = 8 + Math.floor(i / 2);
+                const minute = i % 2 === 0 ? '00' : '30';
+                const val = `${hour.toString().padStart(2, '0')}:${minute}`;
+                return <option key={val} value={val}>{val}</option>;
+              })}
+            </select>
           </div>
         </div>
 
