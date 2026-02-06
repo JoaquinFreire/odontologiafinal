@@ -321,6 +321,11 @@
   .odontograma-container {
     grid-template-columns: 1fr;
   }
+/* Estilos para campos con error */
+.field-error {
+  border: 2px solid #f44336;
+  background-color: #ffebee;
+}
   
   .odontograma-notes {
     grid-template-columns: 1fr;
