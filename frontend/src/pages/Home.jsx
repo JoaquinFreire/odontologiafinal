@@ -340,17 +340,27 @@ const Home = ({ user, handleLogout }) => {
             </div>
             <div className="modal-content">
               <form onSubmit={handleRescheduleSubmit}>
-                <div className="form-group">
-                  <label>Fecha</label>
-                  <input type="date" value={rescheduleForm.date} onChange={e => setRescheduleForm({...rescheduleForm, date: e.target.value})} required />
-                </div>
-                <div className="form-group">
-                  <label>Hora</label>
-                  <input type="time" value={rescheduleForm.time} onChange={e => setRescheduleForm({...rescheduleForm, time: e.target.value})} required />
+                <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                  <div className="form-group">
+                    <label>Fecha</label>
+                    <input type="date" value={rescheduleForm.date} onChange={e => setRescheduleForm({...rescheduleForm, date: e.target.value})} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Hora</label>
+                    <select value={rescheduleForm.time} onChange={e => setRescheduleForm({...rescheduleForm, time: e.target.value})} required>
+                      <option value="">Seleccionar...</option>
+                      {Array.from({ length: (21 - 8 + 1) * 2 }, (_, i) => {
+                        const hour = 8 + Math.floor(i / 2);
+                        const minute = i % 2 === 0 ? '00' : '30';
+                        const val = `${hour.toString().padStart(2, '0')}:${minute}`;
+                        return <option key={val} value={val}>{val}</option>;
+                      })}
+                    </select>
+                  </div>
                 </div>
                 <div className="modal-actions">
-                  <button type="button" onClick={() => setShowRescheduleModal(false)}>Cancelar</button>
-                  <button type="submit">Reprogramar</button>
+                  <button type="button" className="btn-outline cancel" onClick={() => setShowRescheduleModal(false)}>Cancelar</button>
+                  <button type="submit" className="btn-primary" disabled={loading}>{loading ? 'Reprogramando...' : 'Reprogramar'}</button>
                 </div>
               </form>
             </div>
