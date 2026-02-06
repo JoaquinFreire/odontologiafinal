@@ -49,12 +49,12 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [originalData, setOriginalData] = useState({});
   const [anamnesisId, setAnamnesisId] = useState(null);
-  const [newTreatment, setNewTreatment] = useState({ 
-    date: new Date().toISOString().split('T')[0], 
-    code: '', 
-    tooth_elements: '', 
-    faces: '', 
-    observations: '' 
+  const [newTreatment, setNewTreatment] = useState({
+    date: new Date().toISOString().split('T')[0],
+    code: '',
+    tooth_elements: '',
+    faces: '',
+    observations: ''
   });
 
   // Datos del paciente
@@ -162,7 +162,7 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
   const [hasChangesOdontograma, setHasChangesOdontograma] = useState(false);
   const [hasChangesTreatments, setHasChangesTreatments] = useState(false);
   const [hasChangesConsent, setHasChangesConsent] = useState(false);
-  
+
   // Rastrear qué sección mostró advertencia
   const [lastSectionWithWarning, setLastSectionWithWarning] = useState(null);
 
@@ -362,7 +362,7 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
               observations: data.anamnesis.observaciones || ''
             };
           })() : null,
-          odontograma: data.odontograma ? { 
+          odontograma: data.odontograma ? {
             adult: data.odontograma.adult || { teethState: {}, connections: [] },
             child: data.odontograma.child || { teethState: {}, connections: [] },
             observaciones: data.odontograma.observaciones || '',
@@ -426,12 +426,12 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
       }) !== JSON.stringify(originalData.patient);
 
       // Comparar anamnesis
-      const anamnesisChanged = originalData.anamnesis ? 
+      const anamnesisChanged = originalData.anamnesis ?
         JSON.stringify(anamnesisData) !== JSON.stringify(originalData.anamnesis) : false;
 
       // Comparar odontograma (sin tratamientos)
       const odontogramaChanged = originalData.odontograma ?
-        JSON.stringify({...odontogramaData, treatments: []}) !== JSON.stringify({...originalData.odontograma, treatments: []}) : false;
+        JSON.stringify({ ...odontogramaData, treatments: [] }) !== JSON.stringify({ ...originalData.odontograma, treatments: [] }) : false;
 
       // Comparar tratamientos
       const originalTreatments = originalData.odontograma?.treatments || [];
@@ -471,7 +471,7 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
   const handleTabChange = (newTab) => {
     // Obtener el estado de cambios de la sección actual
     const getSectionChanges = (tab) => {
-      switch(tab) {
+      switch (tab) {
         case 'datos': return hasChangesPatient;
         case 'anamnesis': return hasChangesAnamnesis;
         case 'odontograma': return hasChangesOdontograma;
@@ -506,18 +506,18 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
       if (result.success) {
         // Cargar la versión - result.data es el odontograma, no contiene tratamientos
         // Los tratamientos se cargaron previamente en odontogramaData y no cambian al cambiar versión
-        setOdontogramaData(prev => ({ 
-          ...result.data, 
+        setOdontogramaData(prev => ({
+          ...result.data,
           treatments: prev.treatments  // Mantener los tratamientos actuales
         }));
         setCurrentVersion(version);
         // No marcar como cambio sin guardar cuando cambias de versión
         setHasChangesOdontograma(false);
         // Actualizar originalData para evitar cambios no guardados falsos
-        setOriginalData(prev => ({ 
-          ...prev, 
-          odontograma: { 
-            ...result.data, 
+        setOriginalData(prev => ({
+          ...prev,
+          odontograma: {
+            ...result.data,
             treatments: prev.odontograma?.treatments || []
           }
         }));
@@ -692,8 +692,8 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
             <div className="section-header">
               <div className="version-selector">
                 <label>Versión: </label>
-                <select 
-                  value={currentVersion} 
+                <select
+                  value={currentVersion}
                   onChange={(e) => handleVersionChange(parseInt(e.target.value))}
                 >
                   {odontogramaVersions.map(version => (
@@ -749,14 +749,14 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
                       <input
                         type="date"
                         value={newTreatment.date}
-                        onChange={(e) => setNewTreatment({...newTreatment, date: e.target.value})}
+                        onChange={(e) => setNewTreatment({ ...newTreatment, date: e.target.value })}
                       />
                     </td>
                     <td>
                       <input
                         type="text"
                         value={newTreatment.code}
-                        onChange={(e) => setNewTreatment({...newTreatment, code: e.target.value})}
+                        onChange={(e) => setNewTreatment({ ...newTreatment, code: e.target.value })}
                         maxLength="12"
                         placeholder="Máx 12 caracteres"
                       />
@@ -765,7 +765,7 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
                       <input
                         type="text"
                         value={newTreatment.tooth_elements}
-                        onChange={(e) => setNewTreatment({...newTreatment, tooth_elements: e.target.value})}
+                        onChange={(e) => setNewTreatment({ ...newTreatment, tooth_elements: e.target.value })}
                         maxLength="50"
                       />
                     </td>
@@ -773,14 +773,14 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
                       <input
                         type="text"
                         value={newTreatment.faces}
-                        onChange={(e) => setNewTreatment({...newTreatment, faces: e.target.value})}
+                        onChange={(e) => setNewTreatment({ ...newTreatment, faces: e.target.value })}
                         maxLength="20"
                       />
                     </td>
                     <td>
                       <textarea
                         value={newTreatment.observations}
-                        onChange={(e) => setNewTreatment({...newTreatment, observations: e.target.value})}
+                        onChange={(e) => setNewTreatment({ ...newTreatment, observations: e.target.value })}
                         rows="2"
                       ></textarea>
                     </td>
@@ -821,7 +821,7 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
       case 'consentimiento':
         return (
           <div>
-            <div className="section-header">    
+            <div className="section-header">
               <button
                 className="btn-primary small"
                 onClick={() => handleSaveSection('consentimiento')}
@@ -910,57 +910,57 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
             </div>
           </div>
 
-      {/* Indicador de cambios no guardados */}
-      {hasUnsavedChanges && (
-        <div className="unsaved-changes-indicator">
-          Tiene cambios sin guardar
-        </div>
-      )}
+          {/* Indicador de cambios no guardados */}
+          {hasUnsavedChanges && (
+            <div className="unsaved-changes-indicator">
+              Tiene cambios sin guardar
+            </div>
+          )}
 
-      {/* Mensajes */}
-      {message.text && (
-        <div className={`message-alert message-${message.type}`}>
-          {message.type === 'error' && <span>❌</span>}
-          {message.type === 'success' && <span>✅</span>}
-          <p>{message.text}</p>
-        </div>
-      )}
+          {/* Mensajes */}
+          {message.text && (
+            <div className={`message-alert message-${message.type}`}>
+              {message.type === 'error' && <span>❌</span>}
+              {message.type === 'success' && <span>✅</span>}
+              <p>{message.text}</p>
+            </div>
+          )}
 
-      {/* Tabs */}
-      <div className="record-tabs">
-        {tabs.map(tab => {
-          const getTabChanges = (tabId) => {
-            switch(tabId) {
-              case 'datos': return hasChangesPatient;
-              case 'anamnesis': return hasChangesAnamnesis;
-              case 'odontograma': return hasChangesOdontograma;
-              case 'tratamientos': return hasChangesTreatments;
-              case 'consentimiento': return hasChangesConsent;
-              default: return false;
-            }
-          };
-          
-          const tabHasChanges = getTabChanges(tab.id);
-          
-          return (
-            <button
-              key={tab.id}
-              className={`record-tab ${activeTab === tab.id ? 'active' : ''}`}
-              onClick={() => handleTabChange(tab.id)}
-              title={tabHasChanges ? 'Cambios sin guardar en esta sección' : ''}
-            >
-              {tab.icon}
-              {tab.label}
-              {tabHasChanges && <span className="unsaved-badge">⚠</span>}
-            </button>
-          );
-        })}
-      </div>
+          {/* Tabs */}
+          <div className="record-tabs">
+            {tabs.map(tab => {
+              const getTabChanges = (tabId) => {
+                switch (tabId) {
+                  case 'datos': return hasChangesPatient;
+                  case 'anamnesis': return hasChangesAnamnesis;
+                  case 'odontograma': return hasChangesOdontograma;
+                  case 'tratamientos': return hasChangesTreatments;
+                  case 'consentimiento': return hasChangesConsent;
+                  default: return false;
+                }
+              };
 
-      {/* Content */}
-      <div className="record-content">
-        {renderContent()}
-      </div>
+              const tabHasChanges = getTabChanges(tab.id);
+
+              return (
+                <button
+                  key={tab.id}
+                  className={`record-tab ${activeTab === tab.id ? 'active' : ''}`}
+                  onClick={() => handleTabChange(tab.id)}
+                  title={tabHasChanges ? 'Cambios sin guardar en esta sección' : ''}
+                >
+                  {tab.icon}
+                  {tab.label}
+                  {tabHasChanges && <span className="unsaved-badge">⚠</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Content */}
+          <div className="record-content">
+            {renderContent()}
+          </div>
         </div>
       </main>
     </div>

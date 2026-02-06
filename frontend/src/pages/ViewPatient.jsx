@@ -2,13 +2,14 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import '../styles/ViewPatient.css';
+import '../styles/calendar.css';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import SearchPatients from '../components/SearchPatients';
 import PaginationControls from '../components/PaginationControls';
 import { getAllPatients, calculateAge } from '../services/patientService';
 import { appointmentService } from '../services/appointmentService';
-import { Eye, ClipboardList, Calendar, DollarSign, User } from 'lucide-react';
+import { Eye, ClipboardList, Calendar, DollarSign, User, CheckCircle } from 'lucide-react';
 
 const UserIcon = () => <User size={20} />;
 
@@ -46,7 +47,7 @@ const ViewPatient = ({ setIsAuthenticated, user, setUser }) => {
 
     // Datos de Turno
     const [appointmentFormData, setAppointmentFormData] = useState({
-        name: '', date: '', time: '', type: '', dni: ''
+        name: '', date: '', time: '', type: '', dni: '', price: '', payment_method: '', other_treatment: ''
     });
 
     const navigate = useNavigate();
@@ -93,11 +94,48 @@ const ViewPatient = ({ setIsAuthenticated, user, setUser }) => {
     // Handlers Turnos
     const openAppointmentModal = (patient) => {
         setSelectedPatient(patient);
+        const todayStr = new Date().toISOString().split('T')[0];
         setAppointmentFormData({
             name: `${patient.name} ${patient.lastname}`,
-            date: '', time: '', type: '', dni: patient.dni
+            date: todayStr,
+            time: '',
+            type: '',
+            dni: patient.dni,
+            price: '',
+            payment_method: '',
+            other_treatment: ''
         });
         setShowAppointmentModal(true);
+    };
+
+    const handleAppointmentFormChange = (e) => {
+        const { name, value } = e.target;
+        setAppointmentFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const [successMessage, setSuccessMessage] = useState('');
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+    const handleSubmitAppointmentFromViewPatient = async (e) => {
+        e.preventDefault();
+        if (!appointmentFormData.date || !appointmentFormData.time || !appointmentFormData.type) {
+            alert('Por favor completa todos los campos obligatorios');
+            return;
+        }
+        setLoading(true);
+        try {
+            await appointmentService.createAppointment(appointmentFormData);
+            setSuccessMessage(`Turno agendado para ${appointmentFormData.name}`);
+            setShowSuccessModal(true);
+            setShowAppointmentModal(false);
+            setTimeout(() => {
+                setShowSuccessModal(false);
+            }, 2000);
+        } catch (error) {
+            alert(`Error: ${error.message}`);
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Ir a historial clínico
@@ -266,16 +304,76 @@ const ViewPatient = ({ setIsAuthenticated, user, setUser }) => {
                         </div>
                     )}
 
-                    {/* MODAL TURNOS (Simplificado) */}
+                    {/* MODAL TURNOS */}
                     {showAppointmentModal && (
                         <div className="modal-overlay" onClick={() => setShowAppointmentModal(false)}>
-                            <div className="modal appointment-modal" onClick={e => e.stopPropagation()}>
-                                <div className="modal-header"><h3>Agendar Turno</h3><button onClick={() => setShowAppointmentModal(false)} className="close-btn">✕</button></div>
-                                <div className="modal-content">
-                                    <p>Paciente: <strong>{appointmentFormData.name}</strong></p>
-                                    <div className="form-group"><label>Fecha</label><input type="date" className="form-input" /></div>
-                                    <div className="modal-footer"><button className="btn-primary" onClick={() => setShowAppointmentModal(false)}>Guardar Turno</button></div>
+                            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h2>Agendar Turno</h2>
+                                    <button className="modal-close" onClick={() => setShowAppointmentModal(false)}>&times;</button>
                                 </div>
+                                <form className="appointment-form" onSubmit={handleSubmitAppointmentFromViewPatient}>
+                                    <div className="form-group">
+                                        <label>Nombre completo</label>
+                                        <input type="text" name="name" value={appointmentFormData.name} onChange={handleAppointmentFormChange} disabled />
+                                    </div>
+
+                                    <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                        <div className="form-group">
+                                            <label>Fecha *</label>
+                                            <input type="date" name="date" value={appointmentFormData.date} onChange={handleAppointmentFormChange} required min={new Date().toISOString().split('T')[0]} disabled={loading} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Hora *</label>
+                                            <select name="time" value={appointmentFormData.time} onChange={handleAppointmentFormChange} required disabled={loading}>
+                                                <option value="">Seleccionar...</option>
+                                                {Array.from({ length: (21 - 8 + 1) * 2 }, (_, i) => {
+                                                    const hour = 8 + Math.floor(i / 2);
+                                                    const minute = i % 2 === 0 ? '00' : '30';
+                                                    const val = `${hour.toString().padStart(2, '0')}:${minute}`;
+                                                    return <option key={val} value={val}>{val}</option>;
+                                                })}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Tipo de Tratamiento *</label>
+                                        <select name="type" value={appointmentFormData.type} onChange={handleAppointmentFormChange} required disabled={loading}>
+                                            <option value="">Seleccionar...</option>
+                                            <option value="Consulta">Consulta</option>
+                                            <option value="Limpieza dental">Limpieza dental</option>
+                                            <option value="Ortodoncia">Ortodoncia</option>
+                                            <option value="Otro">Otro</option>
+                                        </select>
+                                        {appointmentFormData.type === 'Otro' && (
+                                            <div className="form-group">
+                                                <label>Describir Tratamiento *</label>
+                                                <textarea name="other_treatment" value={appointmentFormData.other_treatment} onChange={handleAppointmentFormChange} placeholder="Describa el tratamiento" required disabled={loading} style={{ padding: '12px', border: '1px solid #e0e0e0', borderRadius: '8px', fontFamily: "'Inter', sans-serif", fontSize: '14px' }} />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>DNI</label>
+                                        <input type="number" name="dni" value={appointmentFormData.dni} onChange={handleAppointmentFormChange} disabled />
+                                    </div>
+
+                                    <div className="modal-actions" style={{ marginTop: '20px' }}>
+                                        <button type="button" className="btn-outline cancel" onClick={() => setShowAppointmentModal(false)} disabled={loading}>Cancelar</button>
+                                        <button type="submit" className="btn-primary" disabled={loading}>{loading ? 'Agendando...' : 'Agendar Turno'}</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {showSuccessModal && (
+                        <div className="success-overlay">
+                            <div className="success-card">
+                                <CheckCircle size={40} color="#22c55e" />
+                                <h3>Operación Exitosa</h3>
+                                <p>{successMessage}</p>
                             </div>
                         </div>
                     )}

@@ -67,7 +67,7 @@
   width: 50px;
   height: auto;
   display: block;
-  animation: spin 3s infinite;
+  animation: bounce 3s infinite;
   margin: 0 auto;
 }
 
