@@ -497,7 +497,7 @@
 }
 
 .modal.wide {
-    max-width: 800px;
+    max-width: 550px;
 }
 
 /* --- Ajuste en el Grid --- */
@@ -517,27 +517,6 @@
     to { transform: translateY(0); opacity: 1; }
 }
 
-
-
-/* .modal {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-    max-width: 600px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    animation: modalFadeIn 0.3s ease-out;
-}
-
-.modal.wide {
-    max-width: 800px;
-}
-
-@keyframes modalFadeIn {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
 
 /* --- Decoración del Modal Content (Detalles del Paciente) --- */
 .patient-details-grid {
