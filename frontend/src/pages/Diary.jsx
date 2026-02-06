@@ -53,9 +53,17 @@ const Diary = ({ user, handleLogout }) => {
       const map = new Map();
       data.forEach(app => {
         const dt = new Date(app.datetime);
-        const dateKey = dt.toISOString().split('T')[0];
-        const timeKey = dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-        const key = `${dateKey}-${timeKey}`;
+          // Convertir de UTC a zona horaria local para obtener la fecha LOCAL
+          const offset = dt.getTimezoneOffset() * 60000;
+          const localTime = new Date(dt.getTime() - offset);
+        
+          // Formatear como YYYY-MM-DD usando la fecha local (sin toISOString que convierte a UTC)
+          const year = localTime.getFullYear();
+          const month = String(localTime.getMonth() + 1).padStart(2, '0');
+          const day = String(localTime.getDate()).padStart(2, '0');
+          const dateKey = `${year}-${month}-${day}`;
+          const timeKey = dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+          const key = `${dateKey}-${timeKey}`;
         if (!map.has(key)) map.set(key, []);
         map.get(key).push(app);
       });
@@ -175,7 +183,11 @@ const Diary = ({ user, handleLogout }) => {
               <React.Fragment key={time}>
                 <div className="grid-time-label">{time}</div>
                 {weekDays.map(day => {
-                  const key = `${day.toISOString().split('T')[0]}-${time}`;
+                  const year = day.getFullYear();
+                  const month = String(day.getMonth() + 1).padStart(2, '0');
+                  const dayNum = String(day.getDate()).padStart(2, '0');
+                  const dateStr = `${year}-${month}-${dayNum}`;
+                  const key = `${dateStr}-${time}`;
                   const apps = appointmentMap.get(key) || [];
                   const isToday = day.toDateString() === new Date().toDateString();
                   return (
