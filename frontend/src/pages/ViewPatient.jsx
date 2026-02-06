@@ -8,8 +8,9 @@ import SearchPatients from '../components/SearchPatients';
 import PaginationControls from '../components/PaginationControls';
 import { getAllPatients, calculateAge } from '../services/patientService';
 import { appointmentService } from '../services/appointmentService';
+import { Eye, ClipboardList, Calendar, DollarSign, User } from 'lucide-react';
 
-const UserIcon = () => <span className="icon">👤</span>;
+const UserIcon = () => <User size={20} />;
 
 const ViewPatient = ({ setIsAuthenticated, user, setUser }) => {
     const [patients, setPatients] = useState([]);
@@ -148,16 +149,16 @@ const ViewPatient = ({ setIsAuthenticated, user, setUser }) => {
                                                     <td>{calculateAge(p.birthdate)} años</td>
                                                     <td>
                                                         <div className="action-buttons">
-                                                            <button className="action-btn details-btn" title="Ver" onClick={() => { setSelectedPatient(p); setShowPatientDetails(true); }}>👁️</button>
+                                                            <button className="action-btn details-btn" title="Ver" onClick={() => { setSelectedPatient(p); setShowPatientDetails(true); }}><Eye size={18} /></button>
                                                             <button
                                                                 className="action-btn history-btn"
                                                                 title="Historial clínico"
                                                                 onClick={() => openMedicalHistory(p)}
                                                             >
-                                                                📋
+                                                                <ClipboardList size={18} />
                                                             </button>
-                                                            <button className="action-btn appointment-btn" title="Turno" onClick={() => openAppointmentModal(p)}>📅</button>
-                                                            <button className="action-btn payment-btn" title="Cobros" onClick={() => openPaymentModal(p)}>$</button>
+                                                            <button className="action-btn appointment-btn" title="Turno" onClick={() => openAppointmentModal(p)}><Calendar size={18} /></button>
+                                                            <button className="action-btn payment-btn" title="Cobros" onClick={() => openPaymentModal(p)}><DollarSign size={18} /></button>
                                                         </div>
                                                     </td>
                                                 </tr>
