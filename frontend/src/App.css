@@ -1514,7 +1514,7 @@ body {
 /* Contenedor principal del Modal para evitar que se rompa */
 .modal-content {
   width: 95%;
-  max-width: 500px; /* Ajusta según prefieras */
+  max-width: 600px; /* Ajusta según prefieras */
   max-height: 90vh;
   overflow-y: auto; /* Permite scroll interno si la pantalla es chica */
   border-radius: 12px;

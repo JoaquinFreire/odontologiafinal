@@ -6,6 +6,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth.routes');
 const patientsRoutes = require('./routes/patients.routes');
 const appointmentsRoutes = require('./routes/appointments.routes');
+const treatmentBudgetsRoutes = require('./routes/treatment-budgets.routes');
 
 console.log('=== INICIANDO SERVIDOR ===');
 console.log('Variables de entorno:');
@@ -30,6 +31,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientsRoutes);
 app.use('/api/appointments', appointmentsRoutes);
+app.use('/api/treatment-budgets', treatmentBudgetsRoutes);
 
 // Ruta de prueba
 app.get('/api/health', (req, res) => {
