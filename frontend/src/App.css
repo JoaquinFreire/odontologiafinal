@@ -9,11 +9,16 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
   background-color: #f8fafc;
   color: #333;
+  /* Optimización de renderizado */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .app {
   display: flex;
   /* min-height: 100vh; */
+  /* Optimización de CSS containment */
+  contain: layout style paint;
 }
 
 /* Sidebar Styles */
@@ -27,6 +32,8 @@ body {
   flex-direction: column;
   padding: 24px 0;
   /* box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1); */
+  /* Optimización: contenedor independiente */
+  contain: content;
 }
 
 .sidebar-header {
@@ -38,6 +45,8 @@ body {
   display: flex;
   align-items: center;
   margin-bottom: 8px;
+  /* Prevenir reflow */
+  will-change: auto;
 } 
 
 .logo-icon {

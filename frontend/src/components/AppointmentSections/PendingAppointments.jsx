@@ -97,4 +97,4 @@ const PendingAppointments = ({
   );
 };
 
-export default PendingAppointments;
+export default React.memo(PendingAppointments);

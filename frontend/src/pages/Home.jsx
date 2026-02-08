@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense, useTransition } from 'react';
 import '../App.css';
 import {
   Calendar, Clock, PlusCircle, AlertCircle, CheckCircle,
@@ -13,7 +13,18 @@ import PendingAppointments from '../components/AppointmentSections/PendingAppoin
 import { appointmentService } from '../services/appointmentService';
 import { getStartOfTodayUTC, getEndOfTodayUTC } from '../utils/dateUtils';
 
+// Lazy load modals para reducir bundle inicial
+const NewAppointmentModal = lazy(() => import('../components/NewAppointmentModal'));
+const EditAppointmentModal = lazy(() => import('../components/EditAppointmentModal'));
+
+const LoadingSpinner = () => (
+  <div style={{ padding: '20px', textAlign: 'center', color: '#999' }}>
+    Cargando...
+  </div>
+);
+
 const Home = ({ user, handleLogout }) => {
+  const [isPending, startTransition] = useTransition(); // Para operaciones no-urgentes
   const [showModal, setShowModal] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
