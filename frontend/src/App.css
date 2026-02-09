@@ -62,7 +62,7 @@ body {
 .clinic-subtitle {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.8);
-  margin-left: 44px;
+  text-align: center;
 }
 
 .sidebar-nav {
@@ -396,11 +396,11 @@ body {
 }
 
 .stat-card.kpi-card:nth-child(1) {
-  border-left-color: #1976d2;
+  border-left-color: #78b93a;
 }
 
 .stat-card.kpi-card:nth-child(2) {
-  border-left-color: #d32f2f;
+  border-left-color: #438eff;
 }
 
 .stat-card.kpi-card:nth-child(3) {
@@ -1153,11 +1153,6 @@ body {
     padding: 14px 20px;
     gap: 12px;
   }
-
-  .clinic-subtitle {
-    font-size: 12px;
-  }
-
   .stats-grid {
     grid-template-columns: 1fr;
   }
@@ -1223,7 +1218,9 @@ body {
   }
 
   .logo {
-    margin-bottom: 4px;
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
   }
 
   .logo-icon {
@@ -1232,11 +1229,6 @@ body {
 
   .logo h2 {
     font-size: 20px;
-  }
-
-  .clinic-subtitle {
-    font-size: 12px;
-    margin-left: 38px;
   }
 
   .sidebar-nav {
