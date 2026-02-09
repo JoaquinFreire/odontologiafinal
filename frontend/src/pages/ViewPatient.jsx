@@ -44,7 +44,6 @@ const ViewPatient = ({ user }) => {
         load();
     }, [user, currentPage, searchTerm]);
 
-    // Función para formatear fechas y evitar el error de ReferenceError
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
         return dateString.split('T')[0].split('-').reverse().join('/');
@@ -60,7 +59,9 @@ const ViewPatient = ({ user }) => {
             name: `${p.name} ${p.lastname}`,
             dni: p.dni,
             date: new Date().toISOString().split('T')[0],
-            time: '', type: '', other_treatment: ''
+            time: '', 
+            type: '', 
+            other_treatment: ''
         });
         setShowAppointmentModal(true);
     };
@@ -156,7 +157,7 @@ const ViewPatient = ({ user }) => {
                         </div>
                     </div>
 
-                    {/* MODAL DETALLES COMPLETO (9 CAMPOS) */}
+                    {/* MODAL DETALLES */}
                     {showPatientDetails && selectedPatient && (
                         <div className="modal-overlay" onClick={() => setShowPatientDetails(false)}>
                             <div className="modal modal-wide" onClick={e => e.stopPropagation()}>
@@ -181,30 +182,60 @@ const ViewPatient = ({ user }) => {
                         </div>
                     )}
 
-                    {/* MODAL AGENDAR TURNO */}
+                    {/* MODAL AGENDAR TURNO (image_772db7.png Design) */}
                     {showAppointmentModal && (
                         <div className="modal-overlay" onClick={() => setShowAppointmentModal(false)}>
-                            <div className="modal" onClick={e => e.stopPropagation()}>
+                            <div className="modal agenda-modal" onClick={e => e.stopPropagation()}>
                                 <div className="modal-header">
-                                    <h3 className="modal-title">Agendar Turno</h3>
+                                    <h3 className="modal-title agenda-title">Agendar Nuevo Turno</h3>
                                     <button onClick={() => setShowAppointmentModal(false)} className="close-btn">✕</button>
                                 </div>
                                 <form onSubmit={handleSubmitAppointment} className="modal-content">
                                     <div className="form-group">
-                                        <label>Paciente</label>
-                                        <input type="text" value={appointmentFormData.name} readOnly className="form-input disabled" />
+                                        <label>Nombre completo</label>
+                                        <input type="text" value={appointmentFormData.name} readOnly className="form-input" />
                                     </div>
+
                                     <div className="form-row">
                                         <div className="form-group">
-                                            <label>Fecha</label>
+                                            <label>Fecha *</label>
                                             <input type="date" name="date" value={appointmentFormData.date} onChange={handleAppointmentFormChange} required className="form-input" />
                                         </div>
                                         <div className="form-group">
-                                            <label>Hora</label>
-                                            <input type="time" name="time" value={appointmentFormData.time} onChange={handleAppointmentFormChange} required className="form-input" />
+                                            <label>Hora *</label>
+                                            <select name="time" value={appointmentFormData.time} onChange={handleAppointmentFormChange} required className="form-input">
+                                                <option value="">Seleccionar...</option>
+                                                {Array.from({ length: 29 }).map((_, i) => {
+                                                    const hour = Math.floor(i / 2) + 8;
+                                                    const minutes = i % 2 === 0 ? '00' : '30';
+                                                    const timeStr = `${hour.toString().padStart(2, '0')}:${minutes}`;
+                                                    return <option key={timeStr} value={timeStr}>{timeStr}</option>;
+                                                })}
+                                            </select>
                                         </div>
                                     </div>
-                                    <button type="submit" className="submit-btn">Confirmar Turno</button>
+
+                                    <div className="form-group">
+                                        <label>Tipo de Tratamiento *</label>
+                                        <select name="type" value={appointmentFormData.type} onChange={handleAppointmentFormChange} required className="form-input">
+                                            <option value="">Seleccionar...</option>
+                                            <option value="Consulta General">Consulta General</option>
+                                            <option value="Ortodoncia">Ortodoncia</option>
+                                            <option value="Limpieza">Limpieza / Profilaxis</option>
+                                            <option value="Extracción">Extracción</option>
+                                            <option value="Otro">Otro</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>DNI</label>
+                                        <input type="text" value={appointmentFormData.dni} readOnly className="form-input" />
+                                    </div>
+
+                                    <div className="modal-footer-agenda">
+                                        <button type="button" onClick={() => setShowAppointmentModal(false)} className="cancel-link">Cancelar</button>
+                                        <button type="submit" className="confirm-agenda-btn">Agendar Turno</button>
+                                    </div>
                                 </form>
                             </div>
                         </div>
@@ -225,7 +256,6 @@ const ViewPatient = ({ user }) => {
                         </div>
                     )}
 
-                    {/* TOAST DE ÉXITO */}
                     {showSuccessModal && (
                         <div className="success-toast">
                             <CheckCircle size={20} />
@@ -238,4 +268,4 @@ const ViewPatient = ({ user }) => {
     );
 };
 
-export default ViewPatient;
+export default ViewPatient;s
