@@ -428,10 +428,11 @@
 
     .actions-cell::before {
         content: "Acciones";
-        margin-bottom: 4px; /* Espacio entre el texto 'Acciones' y los botones */
+        margin-bottom: 4px; 
         width: 100%;
         text-align: left;
     }
+
 
     .action-buttons {
         width: 100%;
