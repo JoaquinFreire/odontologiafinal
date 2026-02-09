@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense, useTransition } from 'react';
 import '../App.css';
 import {
   Calendar, Clock, PlusCircle, AlertCircle, CheckCircle,
@@ -11,9 +11,20 @@ import TodayAppointments from '../components/AppointmentSections/TodayAppointmen
 import OverdueAppointments from '../components/AppointmentSections/OverdueAppointments';
 import PendingAppointments from '../components/AppointmentSections/PendingAppointments';
 import { appointmentService } from '../services/appointmentService';
-import { getStartOfTodayUTC, getEndOfTodayUTC } from '../utils/dateUtils';
+import { getAppointmentDateLocal } from '../utils/dateUtils';
+
+// Lazy load modals para reducir bundle inicial
+const NewAppointmentModal = lazy(() => import('../components/NewAppointmentModal'));
+const EditAppointmentModal = lazy(() => import('../components/EditAppointmentModal'));
+
+const LoadingSpinner = () => (
+  <div style={{ padding: '20px', textAlign: 'center', color: '#999' }}>
+    Cargando...
+  </div>
+);
 
 const Home = ({ user, handleLogout }) => {
+  const [isPending, startTransition] = useTransition(); // Para operaciones no-urgentes
   const [showModal, setShowModal] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -66,15 +77,25 @@ const Home = ({ user, handleLogout }) => {
       if (!user?.id) return;
       const allPending = await appointmentService.getAllPendingAppointments(user.id);
 
-      const startOfDay = new Date(getStartOfTodayUTC());
-      const endOfDay = new Date(getEndOfTodayUTC());
+      // Obtener la fecha local de hoy en formato YYYY-MM-DD
+      const today = new Date();
+      const todayDateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
       setTodayAppointments(allPending.filter(app => {
-        const d = new Date(app.datetime);
-        return d >= startOfDay && d < endOfDay;
+        const appointmentDateLocal = getAppointmentDateLocal(app.datetime);
+        return appointmentDateLocal === todayDateStr;
       }));
-      setOverdueAppointments(allPending.filter(app => new Date(app.datetime) < startOfDay));
-      setNextAppointments(allPending.filter(app => new Date(app.datetime) >= endOfDay));
+      
+      setOverdueAppointments(allPending.filter(app => {
+        const appointmentDateLocal = getAppointmentDateLocal(app.datetime);
+        return appointmentDateLocal < todayDateStr;
+      }));
+      
+      setNextAppointments(allPending.filter(app => {
+        const appointmentDateLocal = getAppointmentDateLocal(app.datetime);
+        return appointmentDateLocal > todayDateStr;
+      }));
+      
       setTotalPending(allPending.length);
     } catch (error) {
       console.error('Error al cargar datos:', error);

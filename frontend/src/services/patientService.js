@@ -1,4 +1,6 @@
 /* eslint-disable no-unused-vars */
+import { formatPatientDataForDB } from '../validators/formValidators';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Función helper para obtener headers con token
@@ -66,28 +68,18 @@ export const saveCompletePatient = async (patientData, anamnesisData, consentDat
       };
     }
 
-    // Validar que al menos una enfermedad esté marcada
-    const hasAnyDisease = Object.values(anamnesisData.diseases).some(value => value === true);
-    if (!hasAnyDisease) {
-      return {
-        success: false,
-        error: 'Debe marcar al menos una condición en la anamnesis'
-      };
-    }
+    // Las enfermedades son opcionales - se permite guardar sin marcar ninguna
 
-    // Validar consentimiento
-    if (!consentData?.accepted) {
-      return {
-        success: false,
-        error: 'Debe aceptar el consentimiento informado'
-      };
-    }
+    // El consentimiento es optional - no es bloqueante
+
+    // Formatear datos antes de enviar
+    const formattedPatientData = formatPatientDataForDB(patientData);
 
     const response = await fetch(`${API_BASE_URL}/patients/complete`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
-        patientData,
+        patientData: formattedPatientData,
         anamnesisData,
         consentData,
         odontogramaData
@@ -311,14 +303,17 @@ export const getOdontogramaByVersion = async (patientId, version, userId) => {
 // Actualizar datos del paciente (solo campos editables)
 export const updatePatientData = async (patientId, data) => {
   try {
+    // Formatear nombre y apellido, y normalizar teléfono y email
+    const formattedData = formatPatientDataForDB(data);
+
     const response = await fetch(`${API_BASE_URL}/patients/${patientId}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify({
-        tel: data.phone,
-        email: data.email,
+        tel: formattedData.phone,
+        email: formattedData.email,
         address: data.address,
-        occupation: data.occupation,
+        occupation: formattedData.occupation,
         affiliate_number: data.healthInsurance?.number,
         holder: data.healthInsurance?.isHolder
       }),

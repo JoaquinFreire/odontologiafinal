@@ -19,14 +19,37 @@ import { getCompletePatientHistory, updatePatientData, updatePatientAnamnesis, u
 // Importar estilos
 import '../styles/PatientRecord.css';
 
-// Función para formatear fechas
+// Función para formatear fechas (muestra fecha u fecha+hora según el valor guardado)
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
   try {
     const date = new Date(dateString);
+    if (isNaN(date)) return dateString;
+    const hasTime = /T|:/.test(String(dateString));
+    if (hasTime) {
+      return date.toLocaleString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    }
     return date.toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' });
   } catch {
     return dateString;
+  }
+};
+
+// Convierte una fecha/fecha-hora a formato compatible con `datetime-local` (YYYY-MM-DDTHH:mm)
+const toDateTimeLocal = (dateString) => {
+  if (!dateString) return new Date().toISOString().slice(0, 16);
+  try {
+    const d = new Date(dateString);
+    if (isNaN(d)) return new Date().toISOString().slice(0, 16);
+    const pad = (n) => String(n).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    const mm = pad(d.getMonth() + 1);
+    const dd = pad(d.getDate());
+    const hh = pad(d.getHours());
+    const min = pad(d.getMinutes());
+    return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+  } catch {
+    return new Date().toISOString().slice(0, 16);
   }
 };
 
@@ -50,7 +73,7 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
   const [originalData, setOriginalData] = useState({});
   const [anamnesisId, setAnamnesisId] = useState(null);
   const [newTreatment, setNewTreatment] = useState({
-    date: new Date().toISOString().split('T')[0],
+    date: '',
     code: '',
     tooth_elements: '',
     faces: '',
@@ -288,11 +311,11 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
           });
         }
 
-        // Cargar consentimiento
+        // Cargar consentimiento (normalizar para input datetime-local)
         if (data.consent) {
           setConsentData({
             accepted: data.consent.accepted,
-            datetime: data.consent.datetime,
+            datetime: toDateTimeLocal(data.consent.datetime),
             doctorName: data.consent.doctorName || user?.name || '',
             doctorMatricula: data.consent.doctorMatricula || user?.tuition || '',
             text: data.consent.text
@@ -372,7 +395,7 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
           } : null,
           consent: data.consent ? {
             accepted: data.consent.accepted,
-            datetime: data.consent.datetime,
+            datetime: toDateTimeLocal(data.consent.datetime),
             doctorName: user?.name || '',
             doctorMatricula: user?.tuition || '',
             text: data.consent.text
@@ -756,49 +779,60 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
                       <input
                         type="text"
                         value={newTreatment.code}
-                        onChange={(e) => setNewTreatment({ ...newTreatment, code: e.target.value })}
-                        maxLength="12"
-                        placeholder="Máx 12 caracteres"
+                        onChange={(e) => setNewTreatment({ ...newTreatment, code: e.target.value.slice(0, 30) })}
+                        maxLength="30"
+                        placeholder="Máx 30 caracteres"
                       />
                     </td>
                     <td>
                       <input
                         type="text"
                         value={newTreatment.tooth_elements}
-                        onChange={(e) => setNewTreatment({ ...newTreatment, tooth_elements: e.target.value })}
-                        maxLength="50"
+                        onChange={(e) => setNewTreatment({ ...newTreatment, tooth_elements: e.target.value.slice(0, 30) })}
+                        maxLength="30"
+                        placeholder="Máx 30 caracteres"
                       />
                     </td>
                     <td>
                       <input
                         type="text"
                         value={newTreatment.faces}
-                        onChange={(e) => setNewTreatment({ ...newTreatment, faces: e.target.value })}
-                        maxLength="20"
+                        onChange={(e) => setNewTreatment({ ...newTreatment, faces: e.target.value.slice(0, 30) })}
+                        maxLength="30"
+                        placeholder="Máx 30 caracteres"
                       />
                     </td>
                     <td>
                       <textarea
                         value={newTreatment.observations}
-                        onChange={(e) => setNewTreatment({ ...newTreatment, observations: e.target.value })}
+                        onChange={(e) => setNewTreatment({ ...newTreatment, observations: e.target.value.slice(0, 500) })}
+                        maxLength="500"
                         rows="2"
+                        placeholder="Máx 500 caracteres"
                       ></textarea>
                     </td>
                   </tr>
                 </tbody>
               </table>
-              {(newTreatment.date || newTreatment.code || newTreatment.tooth_elements || newTreatment.faces || newTreatment.observations) && (
+              {(newTreatment.code || newTreatment.tooth_elements || newTreatment.faces || newTreatment.observations) && (
                 <button
                   className="btn-primary small"
                   onClick={async () => {
                     try {
                       setSaving(true);
-                      const updatedTreatments = [...odontogramaData.treatments, newTreatment];
+                      const treatmentToAdd = {
+                        date: newTreatment.date || new Date().toISOString().split('T')[0],
+                        code: newTreatment.code,
+                        tooth_elements: newTreatment.tooth_elements,
+                        faces: newTreatment.faces,
+                        observations: newTreatment.observations
+                      };
+                      const updatedTreatments = [...odontogramaData.treatments, treatmentToAdd];
                       const result = await updateTreatments(patientId, updatedTreatments);
                       if (result.success) {
                         setOdontogramaData(prev => ({ ...prev, treatments: updatedTreatments }));
                         setOriginalData(prev => ({ ...prev, odontograma: { ...prev.odontograma, treatments: updatedTreatments } }));
-                        setNewTreatment({ date: new Date().toISOString().split('T')[0], code: '', tooth_elements: '', faces: '', observations: '' });
+                        setNewTreatment({ date: '', code: '', tooth_elements: '', faces: '', observations: '' });
                         setHasChangesTreatments(false);
                         setMessage({ type: 'success', text: 'Tratamiento guardado exitosamente' });
                       } else {

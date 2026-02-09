@@ -87,4 +87,4 @@ const OverdueAppointments = ({
   );
 };
 
-export default OverdueAppointments;
+export default React.memo(OverdueAppointments);

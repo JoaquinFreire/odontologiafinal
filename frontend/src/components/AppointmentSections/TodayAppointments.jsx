@@ -102,4 +102,4 @@ const TodayAppointments = ({
   );
 };
 
-export default TodayAppointments;
+export default React.memo(TodayAppointments);
