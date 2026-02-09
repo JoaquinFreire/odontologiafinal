@@ -1,482 +1,193 @@
-/* ========================================
-   PAYMENT SECTION STYLES
-   ======================================== */
-
-.payment-section {
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  margin: 20px 0;
-}
-
-.payment-section h2 {
-  color: #333;
-  margin-bottom: 20px;
-  font-size: 24px;
-  border-bottom: 2px solid #007bff;
-  padding-bottom: 10px;
-}
-
-/* ========================================
-   ERROR MESSAGE
-   ======================================== */
-
-.error-message {
-  background-color: #f8d7da;
-  color: #721c24;
-  padding: 12px;
-  border-radius: 4px;
-  margin-bottom: 15px;
-  border-left: 4px solid #f5c6cb;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.error-message p {
-  margin: 0;
-}
-
-.error-message button {
-  background-color: transparent;
-  border: none;
-  color: #721c24;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-/* ========================================
-   BUTTONS
-   ======================================== */
-
-.btn {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  text-align: center;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
-  box-shadow: 0 2px 8px rgba(0, 86, 179, 0.3);
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background-color: #5a6268;
-  box-shadow: 0 2px 8px rgba(90, 98, 104, 0.3);
-}
-
-.btn-success {
-  background-color: #28a745;
-  color: white;
-}
-
-.btn-success:hover {
-  background-color: #218838;
-  box-shadow: 0 2px 8px rgba(33, 136, 56, 0.3);
-}
-
-.btn-danger {
-  background-color: #dc3545;
-  color: white;
-}
-
-.btn-danger:hover {
-  background-color: #c82333;
-  box-shadow: 0 2px 8px rgba(200, 35, 51, 0.3);
-}
-
-.btn-small {
-  padding: 6px 10px;
-  font-size: 12px;
-}
-
-/* ========================================
-   FORMS
-   ======================================== */
-
-.form-container {
-  background-color: white;
-  padding: 15px;
-  border-radius: 6px;
-  margin: 15px 0;
-  border: 1px solid #ddd;
-}
-
-.form-container h3,
-.form-container h4 {
-  color: #333;
-  margin-top: 0;
-  margin-bottom: 15px;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  color: #555;
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.form-group input,
-.form-group select {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  font-family: Arial, sans-serif;
-  box-sizing: border-box;
-  transition: border-color 0.3s ease;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
-
-.form-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-top: 15px;
-}
-
-.form-actions .btn {
-  flex: 1;
-  max-width: 150px;
-}
-
-/* ========================================
-   NEW BUDGET SECTION
-   ======================================== */
-
-.new-budget-section {
-  margin-bottom: 20px;
-}
-
-.new-budget-form {
-  max-width: 100%;
-}
-
-/* ========================================
-   BUDGETS CONTAINER
-   ======================================== */
-
-.budgets-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-  gap: 20px;
-}
-
-/* Make the payment modal wider when used inside ViewPatient */
-.modal.payment-modal.wide {
-  max-width: 900px;
-  width: 75%;
-}
-
-/* Ensure payments table can scroll on small screens */
-.payments-history, .payments-table {
-  overflow-x: auto;
-}
-
-.new-payment-form {
-  max-width: 100%;
-}
-
-/* ========================================
-   BUDGET CARD
-   ======================================== */
-
-.budget-card {
-  background-color: white;
-  border-radius: 8px;
-  padding: 20px;
-  border: 1px solid #e0e0e0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.budget-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.budget-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #f0f0f0;
-}
-
-.budget-header h3 {
-  color: #333;
-  margin: 0;
-  font-size: 18px;
-}
-
-/* ========================================
-   BUDGET INFO
-   ======================================== */
-
-.budget-info {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.info-item {
-  background-color: #f8f9fa;
-  padding: 12px;
-  border-radius: 6px;
-  text-align: center;
-  border: 1px solid #e9ecef;
-}
-
-.info-item .label {
-  display: block;
-  color: #666;
-  font-size: 12px;
-  text-transform: uppercase;
-  margin-bottom: 5px;
-  font-weight: 600;
-}
-
-.info-item .value {
-  display: block;
-  color: #333;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.info-item .value.pending {
-  color: #dc3545;
-}
-
-.info-item .value.paid {
-  color: #28a745;
-}
-
-/* ========================================
-   PAYMENTS HISTORY
-   ======================================== */
-
-.payments-history {
-  margin: 20px 0;
-  padding: 15px;
-  background-color: #f8f9fa;
-  border-radius: 6px;
-  border-left: 4px solid #007bff;
-}
-
-.payments-history h4 {
-  color: #333;
-  margin-top: 0;
-  margin-bottom: 12px;
-  font-size: 14px;
-}
-
-.payments-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.payments-table thead {
-  background-color: #e9ecef;
-}
-
-.payments-table th {
-  padding: 8px;
-  text-align: left;
-  color: #495057;
-  font-weight: 600;
-  border-bottom: 2px solid #dee2e6;
-}
-
-.payments-table td {
-  padding: 8px;
-  border-bottom: 1px solid #dee2e6;
-  color: #333;
-}
-
-.payments-table tbody tr:hover {
-  background-color: #fff3cd;
-}
-
-/* ========================================
-   ADD PAYMENT SECTION
-   ======================================== */
-
-.add-payment-section {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #e0e0e0;
-}
-
-.add-payment-section .btn-secondary {
-  width: 100%;
-}
-
-.new-payment-form {
-  margin-top: 15px;
-}
-
-.new-payment-form input[type="number"] {
-  font-weight: 500;
-  color: #28a745;
-}
-
-/* Inputs en fila para nuevo pago */
-.payment-input-row {
-  display: flex;
-  gap: 12px;
-  align-items: flex-end;
-  flex-wrap: wrap;
-}
-.payment-input-row .form-group {
-  flex: 1;
-  min-width: 140px;
-}
-
-/* Mensaje de éxito similar al error pero verde */
-.success-message {
-  background-color: #e6f4ea;
-  color: #155724;
-  padding: 16px;
-  border-radius: 4px;
-  margin-bottom: 15px;
-  border-left: 4px solid #c3e6cb;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 500;
-  animation: slideIn 0.3s ease-out;
-}
-.success-message p { 
-  margin: 0;
-  font-size: 15px;
-}
-.success-message button {
-  background-color: transparent;
-  border: none;
-  color: #155724;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ========================================
-   NO BUDGETS MESSAGE
-   ======================================== */
-
-.no-budgets {
-  background-color: #e7f3ff;
-  border: 2px dashed #007bff;
-  border-radius: 6px;
-  padding: 30px;
-  text-align: center;
-  color: #0056b3;
-}
-
-.no-budgets p {
-  margin: 0;
-  font-size: 16px;
-}
-
-/* ========================================
-   RESPONSIVE DESIGN
-   ======================================== */
-
-@media (max-width: 768px) {
-  .budgets-container {
-    grid-template-columns: 1fr;
-  }
-
-  .budget-info {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-
-  .form-actions {
+/* FORZAR ANCHO DEL MODAL PADRE */
+/* .modal:has(.payment-manager-wrapper) {
+    max-width: 900px !important;
+    width: 95% !important;
+} */
+
+.payment-manager-wrapper {
+    display: flex;
     flex-direction: column;
-  }
+    gap: 20px;
+}
 
-  .form-actions .btn {
-    max-width: 100%;
-  }
+.payment-view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 15px;
+}
 
-  .payments-table {
+.payment-view-title { font-size: 20px; font-weight: 700; color: #1e293b; margin: 0; }
+
+.btn-create-budget {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* FORMULARIO INTEGRADO (NO FLOTA) */
+.budget-form-inline {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    animation: slideDown 0.3s ease-out;
+}
+
+.form-inner-title { font-size: 16px; margin: 0 0 15px 0; color: #334155; }
+
+.form-grid-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.input-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.input-field label { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+
+.input-field input, .input-field select {
+    padding: 10px;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.form-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-confirm-save { background: #1e293b; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+.btn-cancel-text { background: transparent; color: #64748b; border: none; cursor: pointer; text-decoration: underline; }
+
+/* TARJETAS */
+.budgets-stack {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 20px;
+}
+
+.payment-card-modern {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+
+.payment-card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.treatment-tag {
+    background: #eff6ff;
+    color: #1e40af;
+    padding: 4px 12px;
+    border-radius: 20px;
     font-size: 12px;
-  }
-
-  .payments-table th,
-  .payments-table td {
-    padding: 6px;
-  }
+    font-weight: 700;
 }
 
-@media (max-width: 480px) {
-  .payment-section {
+.payment-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.metric-item {
+    background: #f8fafc;
+    padding: 15px 10px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid #f1f5f9;
+}
+
+.metric-item label { font-size: 10px; color: #94a3b8; font-weight: 700; display: block; }
+.metric-item span { font-size: 16px; font-weight: 800; color: #1e293b; }
+
+.txt-success { color: #10b981 !important; }
+.txt-danger { color: #ef4444 !important; }
+
+/* REGISTRO DE PAGO */
+.quick-payment-box {
+    background: #f1f5f9;
     padding: 15px;
-  }
-
-  .payment-section h2 {
-    font-size: 20px;
-  }
-
-  .budget-card {
-    padding: 15px;
-  }
-
-  .budget-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .budget-header h3 {
+    border-radius: 12px;
     margin-bottom: 10px;
-  }
-
-  .btn {
-    padding: 8px 12px;
-    font-size: 13px;
-  }
-
-  .form-group input,
-  .form-group select {
-    padding: 8px;
-  }
 }
+
+.quick-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.btn-open-payment-form {
+    width: 100%;
+    padding: 10px;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #475569;
+}
+
+.btn-action-ok { background: #2563eb; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 700; }
+.btn-action-cancel { background: #94a3b8; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; }
+
+/* HISTORIAL */
+.history-drawer {
+    margin-top: 15px;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 10px;
+}
+
+.history-label { font-size: 11px; font-weight: 700; color: #94a3b8; margin-bottom: 5px; }
+
+.history-item-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 4px 0;
+}
+
+.h-amount { font-weight: 700; }
+
+/* RESPONSIVE */
+@media (max-width: 800px) {
+    .budgets-stack { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 500px) {
+    .payment-metrics-grid { grid-template-columns: 1fr; }
+    .form-grid-inputs { grid-template-columns: 1fr; }
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.btn-delete-minimal { background: none; border: none; color: #cbd5e0; cursor: pointer; font-size: 18px; }
+.btn-delete-minimal:hover { color: #ef4444; }
+
+.inline-confirm { background: #fee2e2; padding: 5px 10px; border-radius: 8px; display: flex; gap: 8px; align-items: center; font-size: 12px; font-weight: 700; }
+.btn-yes { background: #ef4444; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer; }
+.btn-no { background: #64748b; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer; }

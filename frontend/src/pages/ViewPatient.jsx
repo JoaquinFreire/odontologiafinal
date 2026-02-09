@@ -1,20 +1,14 @@
 /* eslint-disable no-undef */
-/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import '../styles/ViewPatient.css';
-import '../styles/calendar.css';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
-import SearchPatients from '../components/SearchPatients';
-import PaginationControls from '../components/PaginationControls';
 import PaymentSection from '../components/PaymentSection';
 import { getAllPatients, calculateAge } from '../services/patientService';
 import { appointmentService } from '../services/appointmentService';
-import { Eye, ClipboardList, Calendar, DollarSign, User, CheckCircle } from 'lucide-react';
+import { Eye, ClipboardList, Calendar, DollarSign, User, Search, Plus, CheckCircle } from 'lucide-react';
 
-const UserIcon = () => <User size={20} />;
-
-const ViewPatient = ({ setIsAuthenticated, user, setUser }) => {
+const ViewPatient = ({ user }) => {
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -22,34 +16,20 @@ const ViewPatient = ({ setIsAuthenticated, user, setUser }) => {
     const [totalPages, setTotalPages] = useState(1);
     const [totalPatients, setTotalPatients] = useState(0);
     const [patientsPerPage] = useState(10);
-    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
 
-    useEffect(() => {
-        document.title = 'Ver Pacientes';
-        // Obtener el término de búsqueda de la URL si existe
-        const searchFromUrl = searchParams.get('search');
-        if (searchFromUrl) {
-            setSearchTerm(searchFromUrl);
-        }
-    }, [searchParams]);
-
-    // Modales
     const [showPatientDetails, setShowPatientDetails] = useState(false);
     const [showAppointmentModal, setShowAppointmentModal] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
-
-    // Seleccionar Paciente
     const [selectedPatient, setSelectedPatient] = useState(null);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-    // Datos de Turno
     const [appointmentFormData, setAppointmentFormData] = useState({
-        name: '', date: '', time: '', type: '', dni: '', price: '', payment_method: '', other_treatment: ''
+        name: '', date: '', time: '', type: '', dni: '', other_treatment: ''
     });
 
-    const navigate = useNavigate();
-
     useEffect(() => {
-        const loadPatients = async () => {
+        const load = async () => {
             if (!user?.id) return;
             try {
                 setLoading(true);
@@ -61,74 +41,48 @@ const ViewPatient = ({ setIsAuthenticated, user, setUser }) => {
                 }
             } catch (error) { console.error(error); } finally { setLoading(false); }
         };
-        loadPatients();
-    }, [user, currentPage, searchTerm, patientsPerPage]);
+        load();
+    }, [user, currentPage, searchTerm]);
 
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchTerm]);
-
-    // Handlers Cobros
-    const openPaymentModal = (patient) => {
-        setSelectedPatient(patient);
-        setShowPaymentModal(true);
+    // Función para formatear fechas y evitar el error de ReferenceError
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A';
+        return dateString.split('T')[0].split('-').reverse().join('/');
     };
 
-    // Handlers Turnos
-    const openAppointmentModal = (patient) => {
-        setSelectedPatient(patient);
-        const todayStr = new Date().toISOString().split('T')[0];
+    const handleAppointmentFormChange = (e) => {
+        setAppointmentFormData({ ...appointmentFormData, [e.target.name]: e.target.value });
+    };
+
+    const openAppointmentModal = (p) => {
+        setSelectedPatient(p);
         setAppointmentFormData({
-            name: `${patient.name} ${patient.lastname}`,
-            date: todayStr,
-            time: '',
-            type: '',
-            dni: patient.dni,
-            price: '',
-            payment_method: '',
-            other_treatment: ''
+            name: `${p.name} ${p.lastname}`,
+            dni: p.dni,
+            date: new Date().toISOString().split('T')[0],
+            time: '', type: '', other_treatment: ''
         });
         setShowAppointmentModal(true);
     };
 
-    const handleAppointmentFormChange = (e) => {
-        const { name, value } = e.target;
-        setAppointmentFormData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const [successMessage, setSuccessMessage] = useState('');
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
-
-    const handleSubmitAppointmentFromViewPatient = async (e) => {
+    const handleSubmitAppointment = async (e) => {
         e.preventDefault();
-        if (!appointmentFormData.date || !appointmentFormData.time || !appointmentFormData.type) {
-            alert('Por favor completa todos los campos obligatorios');
-            return;
-        }
-        setLoading(true);
         try {
-            await appointmentService.createAppointment(appointmentFormData);
-            setSuccessMessage(`Turno agendado para ${appointmentFormData.name}`);
-            setShowSuccessModal(true);
-            setShowAppointmentModal(false);
-            setTimeout(() => {
-                setShowSuccessModal(false);
-            }, 2000);
-        } catch (error) {
-            alert(`Error: ${error.message}`);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Ir a historial clínico
-    const openMedicalHistory = (patient) => {
-        navigate(`/patients/${patient.id}/history`);
+            const result = await appointmentService.createAppointment({ 
+                ...appointmentFormData, 
+                patient_id: selectedPatient.id 
+            });
+            if (result.success) {
+                setShowAppointmentModal(false);
+                setShowSuccessModal(true);
+                setTimeout(() => setShowSuccessModal(false), 2500);
+            }
+        } catch (e) { console.error(e); }
     };
 
     return (
         <div className="app">
-            <NavBar user={user} handleLogout={() => navigate('/login')} activeNav="patients" />
+            <NavBar user={user} activeNav="patients" />
             <main className="main-content">
                 <div className="view-patient-container">
                     <div className="header-section">
@@ -136,189 +90,146 @@ const ViewPatient = ({ setIsAuthenticated, user, setUser }) => {
                         <p className="page-subtitle">Control clínico y de pagos</p>
                     </div>
 
-                    <SearchPatients searchTerm={searchTerm} onSearchChange={(term) => setSearchTerm(term)} />
-
-                    {loading ? (
-                        <div className="loading">Cargando pacientes...</div>
-                    ) : patients.length === 0 ? (
-                        <div className="no-results">
-                            <p>No hay pacientes registrados</p>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="patients-table-container">
-                                <div className="table-wrapper">
-                                    <table className="patients-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Paciente</th>
-                                                <th>DNI</th>
-                                                <th>Edad</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {patients.map(p => (
-                                                <tr key={p.id}>
-                                                    <td>
-                                                        <div className="patient-info">
-                                                            <div className="patient-avatar"><UserIcon /></div>
-                                                            <span className="patient-name">{p.name} {p.lastname}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="dni-text">{p.dni}</td>
-                                                    <td>{calculateAge(p.birthdate)} años</td>
-                                                    <td>
-                                                        <div className="action-buttons">
-                                                            <button className="action-btn details-btn" title="Ver" onClick={() => { setSelectedPatient(p); setShowPatientDetails(true); }}><Eye size={18} /></button>
-                                                            <button
-                                                                className="action-btn history-btn"
-                                                                title="Historial clínico"
-                                                                onClick={() => openMedicalHistory(p)}
-                                                            >
-                                                                <ClipboardList size={18} />
-                                                            </button>
-                                                            <button className="action-btn appointment-btn" title="Turno" onClick={() => openAppointmentModal(p)}><Calendar size={18} /></button>
-                                                            <button className="action-btn payment-btn" title="Cobros" onClick={() => openPaymentModal(p)}><DollarSign size={18} /></button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            {/* Paginación */}
-                            {totalPages > 1 && (
-                                <PaginationControls
-                                    currentPage={currentPage}
-                                    totalPages={totalPages}
-                                    totalPatients={totalPatients}
-                                    patientsPerPage={patientsPerPage}
-                                    onPageChange={setCurrentPage}
+                    <div className="search-section">
+                        <div className="search-container">
+                            <div className="search-input-wrapper">
+                                <Search size={18} className="search-icon" />
+                                <input 
+                                    type="text" 
+                                    placeholder="Buscar por nombre o DNI..." 
+                                    value={searchTerm} 
+                                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
+                                    className="search-input" 
                                 />
-                            )}
-                        </>
-                    )}
-                    {/* MODAL DETALLES PACIENTE */}
-                    {showPatientDetails && selectedPatient && (() => {
-                        const isHolder = (selectedPatient.healthInsurance && selectedPatient.healthInsurance.isHolder) || selectedPatient.holder || false;
-                        const affiliateNumber = (selectedPatient.healthInsurance && selectedPatient.healthInsurance.number) || selectedPatient.affiliate_number || selectedPatient.affiliateNumber || selectedPatient.affiliate || 'N/A';
-                        return (
-                            <div className="modal-overlay" onClick={() => setShowPatientDetails(false)}>
-                                <div className="modal details-modal" onClick={e => e.stopPropagation()}>
-                                    <div className="modal-header">
-                                        <h3 className="modal-title">Datos del Paciente - {selectedPatient.name} {selectedPatient.lastname}</h3>
-                                        <button onClick={() => setShowPatientDetails(false)} className="close-btn">✕</button>
-                                    </div>
-                                    <div className="modal-content">
-                                        <div className="patient-details-grid">
-                                            <div><strong>DNI:</strong> {selectedPatient.dni}</div>
-                                            <div><strong>Fecha de Nacimiento:</strong> {selectedPatient.birthdate || 'N/A'}</div>
-                                            <div><strong>Edad:</strong> {calculateAge(selectedPatient.birthdate)} años</div>
-                                            <div><strong>Profesión:</strong> {selectedPatient.occupation || 'N/A'}</div>
-                                            <div><strong>Teléfono:</strong> {selectedPatient.phone || 'N/A'}</div>
-                                            <div><strong>Email:</strong> {selectedPatient.email || 'N/A'}</div>
-                                            <div><strong>Dirección:</strong> {selectedPatient.address || 'N/A'}</div>
-                                            <div><strong>Titular:</strong> {isHolder ? 'Sí' : 'No'}</div>
-                                            {isHolder && (
-                                                <div><strong>Número de Afiliado:</strong> {affiliateNumber}</div>
-                                            )}
-                                            <div><strong>Observaciones:</strong> {selectedPatient.dentalObservations || selectedPatient.notes || '—'}</div>
-                                        </div>
-                                        
+                            </div>
+                            <button className="new-patient-btn" onClick={() => navigate('/patients/new')}>
+                                <Plus size={18} /> <span>Nuevo Paciente</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="patients-table-container">
+                        <table className="patients-table">
+                            <thead>
+                                <tr>
+                                    <th>PACIENTE</th>
+                                    <th>DNI</th>
+                                    <th>EDAD</th>
+                                    <th>ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {patients.map(p => (
+                                    <tr key={p.id}>
+                                        <td>
+                                            <div className="patient-info">
+                                                <div className="patient-avatar"><User size={20} /></div>
+                                                <span className="patient-name">{p.name} {p.lastname}</span>
+                                            </div>
+                                        </td>
+                                        <td className="dni-text">{p.dni}</td>
+                                        <td>{calculateAge(p.birthdate)} años</td>
+                                        <td className="actions-cell">
+                                            <div className="action-buttons">
+                                                <button className="action-btn details-btn" title="Detalles" onClick={() => { setSelectedPatient(p); setShowPatientDetails(true); }}><Eye size={18} /></button>
+                                                <button className="action-btn history-btn" title="Historia Clínica" onClick={() => navigate(`/patients/${p.id}/history`)}><ClipboardList size={18} /></button>
+                                                <button className="action-btn appointment-btn" title="Agendar Turno" onClick={() => openAppointmentModal(p)}><Calendar size={18} /></button>
+                                                <button className="action-btn payment-btn" title="Pagos y Cobros" onClick={() => { setSelectedPatient(p); setShowPaymentModal(true); }}><DollarSign size={18} /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className="pagination-info-container">
+                        <p className="pagination-text">
+                            Mostrando {(currentPage - 1) * patientsPerPage + 1} a {Math.min(currentPage * patientsPerPage, totalPatients)} de {totalPatients} pacientes
+                        </p>
+                        <div className="pagination-btns">
+                            <button className="page-num" onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1}>‹</button>
+                            {[...Array(totalPages)].map((_, i) => (
+                                <button key={i} className={`page-num ${currentPage === i + 1 ? 'active' : ''}`} onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
+                            ))}
+                            <button className="page-num" onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>›</button>
+                        </div>
+                    </div>
+
+                    {/* MODAL DETALLES COMPLETO (9 CAMPOS) */}
+                    {showPatientDetails && selectedPatient && (
+                        <div className="modal-overlay" onClick={() => setShowPatientDetails(false)}>
+                            <div className="modal modal-wide" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h3 className="modal-title">Datos del Paciente - {selectedPatient.name}</h3>
+                                    <button onClick={() => setShowPatientDetails(false)} className="close-btn">✕</button>
+                                </div>
+                                <div className="modal-content">
+                                    <div className="patient-details-grid">
+                                        <div className="info-item"><span className="info-label">DNI</span><span className="info-value">{selectedPatient.dni}</span></div>
+                                        <div className="info-item"><span className="info-label">Fecha de Nacimiento</span><span className="info-value">{formatDate(selectedPatient.birthdate)}</span></div>
+                                        <div className="info-item"><span className="info-label">Edad</span><span className="info-value">{calculateAge(selectedPatient.birthdate)} años</span></div>
+                                        <div className="info-item"><span className="info-label">Profesión</span><span className="info-value">{selectedPatient.occupation || 'N/A'}</span></div>
+                                        <div className="info-item"><span className="info-label">Teléfono</span><span className="info-value">{selectedPatient.phone || 'N/A'}</span></div>
+                                        <div className="info-item"><span className="info-label">Email</span><span className="info-value">{selectedPatient.email || 'N/A'}</span></div>
+                                        <div className="info-item"><span className="info-label">Dirección</span><span className="info-value">{selectedPatient.address || 'N/A'}</span></div>
+                                        <div className="info-item"><span className="info-label">Titular</span><span className="info-value">{selectedPatient.is_holder ? 'Sí' : 'No'}</span></div>
+                                        <div className="info-item full-width"><span className="info-label">Observaciones</span><span className="info-value">{selectedPatient.notes || '—'}</span></div>
                                     </div>
                                 </div>
                             </div>
-                        );
-                    })()}
+                        </div>
+                    )}
+
+                    {/* MODAL AGENDAR TURNO */}
+                    {showAppointmentModal && (
+                        <div className="modal-overlay" onClick={() => setShowAppointmentModal(false)}>
+                            <div className="modal" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h3 className="modal-title">Agendar Turno</h3>
+                                    <button onClick={() => setShowAppointmentModal(false)} className="close-btn">✕</button>
+                                </div>
+                                <form onSubmit={handleSubmitAppointment} className="modal-content">
+                                    <div className="form-group">
+                                        <label>Paciente</label>
+                                        <input type="text" value={appointmentFormData.name} readOnly className="form-input disabled" />
+                                    </div>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label>Fecha</label>
+                                            <input type="date" name="date" value={appointmentFormData.date} onChange={handleAppointmentFormChange} required className="form-input" />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Hora</label>
+                                            <input type="time" name="time" value={appointmentFormData.time} onChange={handleAppointmentFormChange} required className="form-input" />
+                                        </div>
+                                    </div>
+                                    <button type="submit" className="submit-btn">Confirmar Turno</button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
                     {/* MODAL COBROS */}
                     {showPaymentModal && selectedPatient && (
                         <div className="modal-overlay" onClick={() => setShowPaymentModal(false)}>
-                            <div className="modal payment-modal wide" onClick={e => e.stopPropagation()}>
+                            <div className="modal modal-wide" onClick={e => e.stopPropagation()}>
                                 <div className="modal-header">
-                                    <h3 className="modal-title">Gestión de Cobros - {selectedPatient.name}</h3>
+                                    <h3 className="modal-title">Cobros - {selectedPatient.name}</h3>
                                     <button onClick={() => setShowPaymentModal(false)} className="close-btn">✕</button>
                                 </div>
-                                <div className="modal-content" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+                                <div className="modal-content">
                                     <PaymentSection patientId={selectedPatient.id} />
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {/* MODAL TURNOS */}
-                    {showAppointmentModal && (
-                        <div className="modal-overlay" onClick={() => setShowAppointmentModal(false)}>
-                            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                                <div className="modal-header">
-                                    <h2>Agendar Turno</h2>
-                                    <button className="modal-close" onClick={() => setShowAppointmentModal(false)}>&times;</button>
-                                </div>
-                                <form className="appointment-form" onSubmit={handleSubmitAppointmentFromViewPatient}>
-                                    <div className="form-group">
-                                        <label>Nombre completo</label>
-                                        <input type="text" name="name" value={appointmentFormData.name} onChange={handleAppointmentFormChange} disabled />
-                                    </div>
-
-                                    <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                        <div className="form-group">
-                                            <label>Fecha *</label>
-                                            <input type="date" name="date" value={appointmentFormData.date} onChange={handleAppointmentFormChange} required min={new Date().toISOString().split('T')[0]} disabled={loading} />
-                                        </div>
-                                        <div className="form-group">
-                                            <label>Hora *</label>
-                                            <select name="time" value={appointmentFormData.time} onChange={handleAppointmentFormChange} required disabled={loading}>
-                                                <option value="">Seleccionar...</option>
-                                                {Array.from({ length: (21 - 8 + 1) * 2 }, (_, i) => {
-                                                    const hour = 8 + Math.floor(i / 2);
-                                                    const minute = i % 2 === 0 ? '00' : '30';
-                                                    const val = `${hour.toString().padStart(2, '0')}:${minute}`;
-                                                    return <option key={val} value={val}>{val}</option>;
-                                                })}
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label>Tipo de Tratamiento *</label>
-                                        <select name="type" value={appointmentFormData.type} onChange={handleAppointmentFormChange} required disabled={loading}>
-                                            <option value="">Seleccionar...</option>
-                                            <option value="Consulta">Consulta</option>
-                                            <option value="Limpieza dental">Limpieza dental</option>
-                                            <option value="Ortodoncia">Ortodoncia</option>
-                                            <option value="Otro">Otro</option>
-                                        </select>
-                                        {appointmentFormData.type === 'Otro' && (
-                                            <div className="form-group">
-                                                <label>Describir Tratamiento *</label>
-                                                <textarea name="other_treatment" value={appointmentFormData.other_treatment} onChange={handleAppointmentFormChange} placeholder="Describa el tratamiento" required disabled={loading} style={{ padding: '12px', border: '1px solid #e0e0e0', borderRadius: '8px', fontFamily: "'Inter', sans-serif", fontSize: '14px' }} />
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label>DNI</label>
-                                        <input type="number" name="dni" value={appointmentFormData.dni} onChange={handleAppointmentFormChange} disabled />
-                                    </div>
-
-                                    <div className="modal-actions" style={{ marginTop: '20px' }}>
-                                        <button type="button" className="btn-outline cancel" onClick={() => setShowAppointmentModal(false)} disabled={loading}>Cancelar</button>
-                                        <button type="submit" className="btn-primary" disabled={loading}>{loading ? 'Agendando...' : 'Agendar Turno'}</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-
+                    {/* TOAST DE ÉXITO */}
                     {showSuccessModal && (
-                        <div className="success-overlay">
-                            <div className="success-card">
-                                <CheckCircle size={40} color="#22c55e" />
-                                <h3>Operación Exitosa</h3>
-                                <p>{successMessage}</p>
-                            </div>
+                        <div className="success-toast">
+                            <CheckCircle size={20} />
+                            <span>Turno agendado correctamente</span>
                         </div>
                     )}
                 </div>
