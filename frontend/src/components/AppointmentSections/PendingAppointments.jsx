@@ -12,7 +12,7 @@ const PendingAppointments = ({
   return (
     <div className="appointments-card">
       <div className="card-header">
-        <h3>Turnos siguientes</h3>
+        <h3>Turnos posteriores</h3>
         <div className="card-header-actions">
           <span className="badge">{appointments.length} citas próximas</span>
         </div>
@@ -89,8 +89,8 @@ const PendingAppointments = ({
       ) : (
         <div className="empty-state">
           <CheckCircle size={48} color="#388e3c" />
-          <h4>Sin turnos próximos</h4>
-          <p>No hay citas agendadas para después de hoy</p>
+          <h4>Sin turnos posteriores</h4>
+          <p>No hay citas agendadas para fechas futuras</p>
         </div>
       )}
     </div>

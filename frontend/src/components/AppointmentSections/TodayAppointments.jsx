@@ -13,7 +13,7 @@ const TodayAppointments = ({
   return (
     <div className="appointments-card">
       <div className="card-header">
-        <h3>Turnos de hoy</h3>
+        <h3>Turnos para atender</h3>
         <div className="card-header-actions">
           <span className="badge badge-today">{appointments.length} citas programadas</span>
         </div>
@@ -88,10 +88,10 @@ const TodayAppointments = ({
           ))}
         </div>
       ) : (
-        <div className="empty-state">
+            <div className="empty-state">
           <AlertCircle size={48} color="#9e9e9e" />
-          <h4>Sin turnos hoy</h4>
-          <p>No hay citas programadas para hoy</p>
+          <h4>Sin turnos para atender</h4>
+          <p>No hay citas urgentes o para hoy</p>
           <button className="btn-outline" onClick={onOpenModal}>
             <PlusCircle size={22} />
             <span>Agendar turno</span>
