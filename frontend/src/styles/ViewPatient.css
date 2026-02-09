@@ -284,3 +284,165 @@
     .modal-wide { width: 95%; margin: 10px; }
     .patient-details-grid { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 768px) {
+    /* 1. Ajustes de Contenedor y Header */
+    .view-patient-container {
+        padding: 10px;
+    }
+
+    .search-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .new-patient-btn {
+        justify-content: center;
+        width: 100%;
+    }
+
+    /* 2. Transformación de Tabla a "Cards" */
+    /* Escondemos el header original de la tabla */
+    .patients-table thead {
+        display: none;
+    }
+
+    .patients-table, 
+    .patients-table tbody, 
+    .patients-table tr, 
+    .patients-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .patients-table tr {
+        margin-bottom: 15px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: white;
+        padding: 10px;
+    }
+
+    .patients-table td {
+        border: none;
+        padding: 8px 10px;
+        text-align: right; /* Alineamos valores a la derecha */
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Generamos los nombres de las columnas usando el atributo data-label (si existe) 
+       o selectores por orden */
+    .patients-table td::before {
+        content: attr(data-label); /* Si el JSX tuviera data-label */
+        font-weight: 700;
+        font-size: 12px;
+        color: #64748b;
+        text-transform: uppercase;
+    }
+
+    /* Asignación manual de etiquetas en caso de que no existan data-labels en el JSX */
+    .patients-table td:nth-of-type(1)::before { content: "Paciente"; }
+    .patients-table td:nth-of-type(2)::before { content: "DNI"; }
+    .patients-table td:nth-of-type(3)::before { content: "Edad"; }
+    .patients-table td:nth-of-type(4)::before { content: "Acciones"; }
+
+    /* Ajuste específico para la info del paciente y acciones */
+    .patient-info {
+        justify-content: flex-end;
+        width: 100%;
+    }
+
+    .actions-cell {
+        border-top: 1px solid #f1f5f9 !important;
+        margin-top: 5px;
+        padding-top: 12px !important;
+        justify-content: center !important;
+    }
+
+    .action-buttons {
+        width: 100%;
+        justify-content: space-around;
+    }
+
+    .action-btn {
+        width: 42px; /* Un poco más grandes para facilitar el toque (touch targets) */
+        height: 42px;
+    }
+
+    /* 3. Ajustes de Paginación */
+    .pagination-info-container {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    /* 4. Ajustes de Modales */
+    .modal {
+        width: 95%;
+        margin: 0 auto;
+        max-height: 85vh;
+    }
+
+    .modal-content {
+        padding: 15px;
+    }
+
+    .patient-details-grid {
+        grid-template-columns: 1fr; /* Una sola columna en móvil */
+        gap: 15px;
+    }
+
+    .info-item {
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    /* 5. Toast de éxito responsive */
+    .success-toast {
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        justify-content: center;
+    }
+    .actions-cell {
+        display: flex !important;
+        flex-direction: column !important; /* Alinea el título arriba y botones abajo */
+        align-items: flex-start !important; /* Alinea todo a la izquierda */
+        gap: 12px !important;
+        border-top: 1px solid #f1f5f9 !important;
+        margin-top: 10px;
+        padding: 15px 10px !important;
+    }
+
+    .actions-cell::before {
+        content: "Acciones";
+        margin-bottom: 4px; /* Espacio entre el texto 'Acciones' y los botones */
+        width: 100%;
+        text-align: left;
+    }
+
+    .action-buttons {
+        width: 100%;
+        display: flex !important;
+        justify-content: space-between !important; /* Distribuye los botones a lo ancho */
+        gap: 8px;
+    }
+
+    .action-btn {
+        flex: 1; /* Hace que todos los botones tengan el mismo ancho */
+        max-width: 60px; /* Evita que se estiren demasiado en tablets */
+        height: 45px; /* Altura cómoda para dedos */
+    }
+}
