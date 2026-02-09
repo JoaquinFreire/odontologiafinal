@@ -65,8 +65,8 @@ const SingleTooth = ({ id, x, y, data, onInteraction, isSelected }) => {
             <line x1={-r2} y1={-r2} x2={r2} y2={r2} /><line x1={r2} y1={-r2} x2={-r2} y2={r2} />
           </g>
         )}
-        {attributes.implant && <text y={r2 + 15} textAnchor="middle" fill={getColor(attributes.implant)} fontWeight="bold" fontSize="14">I</text>}
-        {attributes.endodontics && <text y={-r2 - 8} textAnchor="middle" fill={getColor(attributes.endodontics)} fontWeight="bold" fontSize="12">Tc</text>}
+        {attributes.implant && <text y={r2 + 15} textAnchor="middle" fill={getColor(attributes.implant)} fontWeight="bold" fontSize="18">I</text>}
+        {attributes.endodontics && <text y={-r2 - 8} textAnchor="middle" fill={getColor(attributes.endodontics)} fontWeight="bold" fontSize="18">Tc</text>}
       </g>
       <text y={r2 + 32} textAnchor="middle" fontSize="13" fill="#333" fontWeight="bold" pointerEvents="none">{id}</text>
     </g>

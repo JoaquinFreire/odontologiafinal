@@ -1,6 +1,13 @@
 // components/PatientRecord/DatosPersonales.jsx
 import React, { useState } from 'react';
 import { Phone, Mail, Home, Briefcase, FileText } from 'lucide-react';
+import { 
+  filterOnlyLetters, 
+  filterOnlyNumbers, 
+  validateDNI, 
+  validateEmail, 
+  validatePhone 
+} from '../../validators/formValidators';
 
 const DatosPersonales = ({ patientData, setPatientData, readOnlyFields = [] }) => {
   const [errors, setErrors] = useState({});
@@ -49,7 +56,10 @@ const DatosPersonales = ({ patientData, setPatientData, readOnlyFields = [] }) =
               type="text"
               id="name"
               value={patientData.name || ''}
-              onChange={(e) => handleInputChange('name', e.target.value.replace(/[0-9]/g, ''))}
+              onChange={(e) => {
+                const filtered = filterOnlyLetters(e.target.value);
+                handleInputChange('name', filtered);
+              }}
               placeholder="Nombre"
               readOnly={isReadOnly('name')}
               className={isReadOnly('name') ? 'readonly' : ''}
@@ -62,7 +72,10 @@ const DatosPersonales = ({ patientData, setPatientData, readOnlyFields = [] }) =
               type="text"
               id="lastname"
               value={patientData.lastname || ''}
-              onChange={(e) => handleInputChange('lastname', e.target.value.replace(/[0-9]/g, ''))}
+              onChange={(e) => {
+                const filtered = filterOnlyLetters(e.target.value);
+                handleInputChange('lastname', filtered);
+              }}
               placeholder="Apellido"
               readOnly={isReadOnly('lastname')}
               className={isReadOnly('lastname') ? 'readonly' : ''}
@@ -70,18 +83,32 @@ const DatosPersonales = ({ patientData, setPatientData, readOnlyFields = [] }) =
             {errors.lastname && <div className="field-error">{errors.lastname}</div>}
           </div>
           <div className="form-group">
-            <label htmlFor="dni">DNI *</label>
+            <label htmlFor="dni">DNI * (máx 11 dígitos)</label>
             <div className="input-with-icon">
               <FileText size={16} />
               <input
                 type="text"
                 id="dni"
                 value={patientData.dni || ''}
-                onChange={(e) => handleInputChange('dni', e.target.value.replace(/\D/g, ''))}
+                onChange={(e) => {
+                  const filtered = filterOnlyNumbers(e.target.value);
+                  if (filtered.length <= 11) {
+                    handleInputChange('dni', filtered);
+                  }
+                  if (filtered.length > 11) {
+                    setFieldError('dni', 'DNI no puede exceder 11 dígitos');
+                  } else {
+                    setErrors(prev => {
+                      const copy = { ...prev };
+                      delete copy.dni;
+                      return copy;
+                    });
+                  }
+                }}
                 placeholder="DNI sin puntos"
                 readOnly={isReadOnly('dni')}
                 className={isReadOnly('dni') ? 'readonly' : ''}
-                maxLength="12"
+                maxLength="11"
               />
               {errors.dni && <div className="field-error">{errors.dni}</div>}
             </div>
@@ -101,17 +128,32 @@ const DatosPersonales = ({ patientData, setPatientData, readOnlyFields = [] }) =
             />
           </div>
           <div className="form-group">
-            <label htmlFor="phone">Teléfono</label>
+            <label htmlFor="phone">Teléfono (máx 15 dígitos)</label>
             <div className="input-with-icon">
               <Phone size={16} />
               <input
                 type="tel"
                 id="phone"
                 value={patientData.phone || ''}
-                onChange={(e) => handleInputChange('phone', e.target.value.replace(/[^0-9+\s-]/g, ''))}
-                placeholder="+1 234 567 890"
+                onChange={(e) => {
+                  const filtered = filterOnlyNumbers(e.target.value);
+                  if (filtered.length <= 15) {
+                    handleInputChange('phone', filtered);
+                  }
+                  if (filtered.length > 15) {
+                    setFieldError('phone', 'Teléfono no puede exceder 15 dígitos');
+                  } else {
+                    setErrors(prev => {
+                      const copy = { ...prev };
+                      delete copy.phone;
+                      return copy;
+                    });
+                  }
+                }}
+                placeholder="1234567890"
                 readOnly={isReadOnly('phone')}
                 className={isReadOnly('phone') ? 'readonly' : ''}
+                maxLength="15"
               />
               {errors.phone && <div className="field-error">{errors.phone}</div>}
             </div>
@@ -129,9 +171,15 @@ const DatosPersonales = ({ patientData, setPatientData, readOnlyFields = [] }) =
                 value={patientData.email || ''}
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 onBlur={(e) => {
-                  const val = e.target.value;
-                  if (val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+                  const val = e.target.value.trim();
+                  if (val && !validateEmail(val)) {
                     setFieldError('email', 'Email inválido');
+                  } else {
+                    setErrors(prev => {
+                      const copy = { ...prev };
+                      delete copy.email;
+                      return copy;
+                    });
                   }
                 }}
                 placeholder="email@ejemplo.com"
@@ -181,17 +229,32 @@ const DatosPersonales = ({ patientData, setPatientData, readOnlyFields = [] }) =
           <h4>Datos de Obra Social</h4>
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="insuranceNumber">Número de Afiliado</label>
+              <label htmlFor="insuranceNumber">Número de Afiliado (máx 20 dígitos)</label>
               <input
                 type="text"
                 id="insuranceNumber"
                 value={patientData.healthInsurance?.number || ''}
-                onChange={(e) => handleInsuranceChange('number', e.target.value.replace(/\D/g, ''))}
+                onChange={(e) => {
+                  const filtered = filterOnlyNumbers(e.target.value);
+                  if (filtered.length <= 20) {
+                    handleInsuranceChange('number', filtered);
+                  }
+                  if (filtered.length > 20) {
+                    setFieldError('insNumber', 'Número de afiliado no puede exceder 20 dígitos');
+                  } else {
+                    setErrors(prev => {
+                      const copy = { ...prev };
+                      delete copy.insNumber;
+                      return copy;
+                    });
+                  }
+                }}
                 placeholder="Número de afiliado"
                 readOnly={isReadOnly('healthInsurance.number')}
                 className={isReadOnly('healthInsurance.number') ? 'readonly' : ''}
-                maxLength="12"
+                maxLength="20"
               />
+              {errors.insNumber && <div className="field-error">{errors.insNumber}</div>}
               {errors.healthInsurance && <div className="field-error">{errors.healthInsurance}</div>}
             </div>
             <div className="form-group checkbox-group">

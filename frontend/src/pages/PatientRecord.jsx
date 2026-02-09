@@ -128,7 +128,7 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
   });
 
   const [newTreatment, setNewTreatment] = useState({ 
-    date: new Date().toISOString().split('T')[0], 
+    date: '', 
     code: '', 
     tooth_elements: '', 
     faces: '', 
@@ -152,7 +152,6 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
 
   const validateRequiredData = () => {
     const patientErrors = [];
-    const consentErrors = [];
 
     // Validar datos personales obligatorios
     if (!patientData.name) patientErrors.push('Nombre');
@@ -160,15 +159,12 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
     if (!patientData.dni) patientErrors.push('DNI');
     if (!patientData.birthDate) patientErrors.push('Fecha de Nacimiento');
 
-    // Validar consentimiento obligatorio
-    if (!consentData.accepted) consentErrors.push('Aceptar el consentimiento');
-    if (!consentData.doctorName) consentErrors.push('Nombre del Doctor');
+    // El consentimiento NO es validación bloqueante, solo advertencia
 
     return {
-      isValid: patientErrors.length === 0 && consentErrors.length === 0,
+      isValid: patientErrors.length === 0,
       patientErrors,
-      consentErrors,
-      hasErrors: patientErrors.length > 0 || consentErrors.length > 0
+      hasErrors: patientErrors.length > 0
     };
   };
 
@@ -186,11 +182,6 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
         errorMsg += `Datos Personales: ${validation.patientErrors.join(', ')}\n`;
         missingSection = 'datos';
       }
-      
-      if (validation.consentErrors.length > 0) {
-        errorMsg += `Consentimiento: ${validation.consentErrors.join(', ')}\n`;
-        missingSection = 'consentimiento';
-      }
 
       setMessage({ 
         type: 'error', 
@@ -206,6 +197,54 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
       
       setLoading(false);
       return;
+    }
+
+    // Advertencia si no aceptó consentimiento (pero permite continuar)
+    if (!consentData.accepted || !consentData.doctorName) {
+      const proceed = window.confirm(
+        '⚠️ ADVERTENCIA: Consentimiento no completamente aceptado.\n\n' +
+        '¿Deseas continuar de todas formas?'
+      );
+      if (!proceed) {
+        setLoading(false);
+        setActiveTab('consentimiento');
+        return;
+      }
+    }
+
+    // Advertencia si no se marcó ninguna enfermedad en anamnesis
+    const hasAnyDisease = Object.values(anamnesisData.diseases || {}).some(value => value === true);
+    if (!hasAnyDisease) {
+      const proceed = window.confirm(
+        '⚠️ ADVERTENCIA: No has marcado ninguna condición en la Anamnesis.\n\n' +
+        '¿Deseas continuar de todas formas?'
+      );
+      if (!proceed) {
+        setLoading(false);
+        setActiveTab('anamnesis');
+        return;
+      }
+    }
+
+    // Advertencia si no se hizo nada en el odontograma
+    const hasOdontogramaData = 
+      Object.keys(odontogramaData.adult?.teethState || {}).length > 0 ||
+      Object.keys(odontogramaData.child?.teethState || {}).length > 0 ||
+      odontogramaData.adult?.connections?.length > 0 ||
+      odontogramaData.child?.connections?.length > 0 ||
+      odontogramaData.observaciones?.trim() ||
+      odontogramaData.elementos_dentarios?.trim();
+
+    if (!hasOdontogramaData) {
+      const proceed = window.confirm(
+        '⚠️ ADVERTENCIA: El Odontograma está vacío.\n\n' +
+        '¿Deseas continuar de todas formas?'
+      );
+      if (!proceed) {
+        setLoading(false);
+        setActiveTab('odontograma');
+        return;
+      }
     }
 
     try {
@@ -304,49 +343,63 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
                       <input
                         type="text"
                         value={newTreatment.code}
-                        onChange={(e) => setNewTreatment({...newTreatment, code: e.target.value})}
-                        maxLength="12"
-                        placeholder="Máx 12 caracteres"
+                        onChange={(e) => setNewTreatment({...newTreatment, code: e.target.value.slice(0, 30)})}
+                        maxLength="30"
+                        placeholder="Máx 30 caracteres"
                       />
                     </td>
                     <td>
                       <input
                         type="text"
                         value={newTreatment.tooth_elements}
-                        onChange={(e) => setNewTreatment({...newTreatment, tooth_elements: e.target.value})}
-                        maxLength="50"
+                        onChange={(e) => setNewTreatment({...newTreatment, tooth_elements: e.target.value.slice(0, 30)})}
+                        maxLength="30"
+                        placeholder="Máx 30 caracteres"
                       />
                     </td>
                     <td>
                       <input
                         type="text"
                         value={newTreatment.faces}
-                        onChange={(e) => setNewTreatment({...newTreatment, faces: e.target.value})}
-                        maxLength="20"
+                        onChange={(e) => setNewTreatment({...newTreatment, faces: e.target.value.slice(0, 30)})}
+                        maxLength="30"
+                        placeholder="Máx 30 caracteres"
                       />
                     </td>
                     <td>
                       <textarea
                         value={newTreatment.observations}
-                        onChange={(e) => setNewTreatment({...newTreatment, observations: e.target.value})}
+                        onChange={(e) => setNewTreatment({...newTreatment, observations: e.target.value.slice(0, 500)})}
+                        maxLength="500"
                         rows="2"
+                        placeholder="Máx 500 caracteres"
                       ></textarea>
                     </td>
                   </tr>
                 </tbody>
               </table>
-              {(newTreatment.date || newTreatment.code || newTreatment.tooth_elements || newTreatment.faces || newTreatment.observations) && (
-                <button
-                  className="btn-primary small"
-                  onClick={() => {
-                    const updatedTreatments = [...odontogramaData.treatments, newTreatment];
-                    setOdontogramaData(prev => ({ ...prev, treatments: updatedTreatments }));
-                    setNewTreatment({ date: new Date().toISOString().split('T')[0], code: '', tooth_elements: '', faces: '', observations: '' });
-                  }}
-                >
-                  Agregar Tratamiento
-                </button>
-              )}
+              <button
+                className="btn-primary small"
+                onClick={() => {
+                  const treatmentToAdd = {
+                    date: newTreatment.date || new Date().toISOString().split('T')[0],
+                    code: newTreatment.code,
+                    tooth_elements: newTreatment.tooth_elements,
+                    faces: newTreatment.faces,
+                    observations: newTreatment.observations
+                  };
+                  const updatedTreatments = [...odontogramaData.treatments, treatmentToAdd];
+                  setOdontogramaData(prev => ({ ...prev, treatments: updatedTreatments }));
+                  setNewTreatment({ date: '', code: '', tooth_elements: '', faces: '', observations: '' });
+                }}
+                disabled={!newTreatment.code && !newTreatment.tooth_elements && !newTreatment.faces && !newTreatment.observations}
+                style={{
+                  opacity: (!newTreatment.code && !newTreatment.tooth_elements && !newTreatment.faces && !newTreatment.observations) ? 0.5 : 1,
+                  cursor: (!newTreatment.code && !newTreatment.tooth_elements && !newTreatment.faces && !newTreatment.observations) ? 'not-allowed' : 'pointer'
+                }}
+              >
+                Agregar Tratamiento
+              </button>
             </div>
           </div>
         );
@@ -385,8 +438,8 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
               <button 
                 className="btn-primary"
                 onClick={handleSaveAll}
-                disabled={loading || activeTab !== 'consentimiento'}
-                title={activeTab !== 'consentimiento' ? 'Completa todas las secciones para guardar' : 'Guardar paciente'}
+                disabled={loading}
+                title="Guardar paciente completo"
               >
                 <Save size={18} />
                 <span>{loading ? 'Guardando...' : 'Guardar Todo'}</span>

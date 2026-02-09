@@ -11,7 +11,7 @@ import TodayAppointments from '../components/AppointmentSections/TodayAppointmen
 import OverdueAppointments from '../components/AppointmentSections/OverdueAppointments';
 import PendingAppointments from '../components/AppointmentSections/PendingAppointments';
 import { appointmentService } from '../services/appointmentService';
-import { getStartOfTodayUTC, getEndOfTodayUTC } from '../utils/dateUtils';
+import { getAppointmentDateLocal } from '../utils/dateUtils';
 
 // Lazy load modals para reducir bundle inicial
 const NewAppointmentModal = lazy(() => import('../components/NewAppointmentModal'));
@@ -77,15 +77,25 @@ const Home = ({ user, handleLogout }) => {
       if (!user?.id) return;
       const allPending = await appointmentService.getAllPendingAppointments(user.id);
 
-      const startOfDay = new Date(getStartOfTodayUTC());
-      const endOfDay = new Date(getEndOfTodayUTC());
+      // Obtener la fecha local de hoy en formato YYYY-MM-DD
+      const today = new Date();
+      const todayDateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
       setTodayAppointments(allPending.filter(app => {
-        const d = new Date(app.datetime);
-        return d >= startOfDay && d < endOfDay;
+        const appointmentDateLocal = getAppointmentDateLocal(app.datetime);
+        return appointmentDateLocal === todayDateStr;
       }));
-      setOverdueAppointments(allPending.filter(app => new Date(app.datetime) < startOfDay));
-      setNextAppointments(allPending.filter(app => new Date(app.datetime) >= endOfDay));
+      
+      setOverdueAppointments(allPending.filter(app => {
+        const appointmentDateLocal = getAppointmentDateLocal(app.datetime);
+        return appointmentDateLocal < todayDateStr;
+      }));
+      
+      setNextAppointments(allPending.filter(app => {
+        const appointmentDateLocal = getAppointmentDateLocal(app.datetime);
+        return appointmentDateLocal > todayDateStr;
+      }));
+      
       setTotalPending(allPending.length);
     } catch (error) {
       console.error('Error al cargar datos:', error);
