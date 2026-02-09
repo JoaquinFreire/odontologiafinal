@@ -11,10 +11,11 @@ import {
   Briefcase,
   ChevronLeft,
   ChevronRight,
-  Check,
   Save,
   Printer,
-  AlertCircle
+  AlertCircle,
+  X,
+  AlertTriangle
 } from 'lucide-react';
 import NavBar from '../components/NavBar';
 import { useNavigate } from 'react-router-dom';
@@ -32,6 +33,10 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const navigate = useNavigate();
+
+  // Estados para el Modal de Advertencia
+  const [showModal, setShowModal] = useState(false);
+  const [modalConfig, setModalConfig] = useState({ title: '', message: '', onConfirm: null });
 
   useEffect(() => {
     document.title = 'Nuevo Paciente';
@@ -149,17 +154,12 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
     navigate('/login');
   };
 
-
   const validateRequiredData = () => {
     const patientErrors = [];
-
-    // Validar datos personales obligatorios
     if (!patientData.name) patientErrors.push('Nombre');
     if (!patientData.lastname) patientErrors.push('Apellido');
     if (!patientData.dni) patientErrors.push('DNI');
     if (!patientData.birthDate) patientErrors.push('Fecha de Nacimiento');
-
-    // El consentimiento NO es validación bloqueante, solo advertencia
 
     return {
       isValid: patientErrors.length === 0,
@@ -168,257 +168,146 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
     };
   };
 
-  const handleSaveAll = async () => {
+  // Función final de guardado
+  const executeSave = async () => {
+    setShowModal(false);
     setLoading(true);
-    setMessage({ type: '', text: '' });
-
-    const validation = validateRequiredData();
-
-    if (!validation.isValid) {
-      let missingSection = '';
-      let errorMsg = '✗ Campos requeridos incompletos:\n\n';
-      
-      if (validation.patientErrors.length > 0) {
-        errorMsg += `Datos Personales: ${validation.patientErrors.join(', ')}\n`;
-        missingSection = 'datos';
-      }
-
-      setMessage({ 
-        type: 'error', 
-        text: errorMsg.replace(/\n/g, ' | ') 
-      });
-      
-      // Auto-dirigirse a la sección que falta
-      if (missingSection) {
-        setTimeout(() => {
-          setActiveTab(missingSection);
-        }, 500);
-      }
-      
-      setLoading(false);
-      return;
-    }
-
-    // Advertencia si no aceptó consentimiento (pero permite continuar)
-    if (!consentData.accepted || !consentData.doctorName) {
-      const proceed = window.confirm(
-        '⚠️ ADVERTENCIA: Consentimiento no completamente aceptado.\n\n' +
-        '¿Deseas continuar de todas formas?'
-      );
-      if (!proceed) {
-        setLoading(false);
-        setActiveTab('consentimiento');
-        return;
-      }
-    }
-
-    // Advertencia si no se marcó ninguna enfermedad en anamnesis
-    const hasAnyDisease = Object.values(anamnesisData.diseases || {}).some(value => value === true);
-    if (!hasAnyDisease) {
-      const proceed = window.confirm(
-        '⚠️ ADVERTENCIA: No has marcado ninguna condición en la Anamnesis.\n\n' +
-        '¿Deseas continuar de todas formas?'
-      );
-      if (!proceed) {
-        setLoading(false);
-        setActiveTab('anamnesis');
-        return;
-      }
-    }
-
-    // Advertencia si no se hizo nada en el odontograma
-    const hasOdontogramaData = 
-      Object.keys(odontogramaData.adult?.teethState || {}).length > 0 ||
-      Object.keys(odontogramaData.child?.teethState || {}).length > 0 ||
-      odontogramaData.adult?.connections?.length > 0 ||
-      odontogramaData.child?.connections?.length > 0 ||
-      odontogramaData.observaciones?.trim() ||
-      odontogramaData.elementos_dentarios?.trim();
-
-    if (!hasOdontogramaData) {
-      const proceed = window.confirm(
-        '⚠️ ADVERTENCIA: El Odontograma está vacío.\n\n' +
-        '¿Deseas continuar de todas formas?'
-      );
-      if (!proceed) {
-        setLoading(false);
-        setActiveTab('odontograma');
-        return;
-      }
-    }
-
     try {
-      console.log('=== GUARDANDO PACIENTE COMPLETO ===');
-      console.log('Datos del paciente:', patientData);
-      console.log('Datos de consentimiento:', consentData);
-      console.log('User ID:', user.id);
-
       const result = await saveCompletePatient(patientData, anamnesisData, consentData, odontogramaData, user.id);
-      
       if (result.success) {
-        setMessage({ 
-          type: 'success', 
-          text: `✓ ${result.message}` 
-        });
+        setMessage({ type: 'success', text: `✓ ${result.message}` });
         setTimeout(() => {
-          // Redirigir a ViewPatient con búsqueda automática del paciente
-          const searchTerm = patientData.name;
-          navigate(`/patients?search=${encodeURIComponent(searchTerm)}`);
+          navigate(`/patients?search=${encodeURIComponent(patientData.name)}`);
         }, 1500);
       } else {
-        setMessage({ 
-          type: 'error', 
-          text: `✗ Error: ${result.error}` 
-        });
+        setMessage({ type: 'error', text: `✗ Error: ${result.error}` });
       }
     } catch (error) {
-      console.error('Error al guardar:', error);
-      setMessage({ 
-        type: 'error', 
-        text: `✗ Error: ${error.message}` 
-      });
+      setMessage({ type: 'error', text: `✗ Error: ${error.message}` });
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSaveAll = async () => {
+    setMessage({ type: '', text: '' });
+    const validation = validateRequiredData();
+
+    if (!validation.isValid) {
+      setMessage({ 
+        type: 'error', 
+        text: `✗ Campos requeridos: ${validation.patientErrors.join(', ')}` 
+      });
+      setActiveTab('datos');
+      return;
+    }
+
+    // Advertencia Consentimiento
+    if (!consentData.accepted || !consentData.doctorName) {
+      setModalConfig({
+        title: 'Consentimiento Incompleto',
+        message: '⚠️ ADVERTENCIA: El consentimiento no ha sido firmado o aceptado completamente. ¿Deseas continuar con el guardado de todas formas?',
+        onConfirm: executeSave
+      });
+      setShowModal(true);
+      return;
+    }
+
+    // Advertencia Anamnesis
+    const hasAnyDisease = Object.values(anamnesisData.diseases || {}).some(value => value === true);
+    if (!hasAnyDisease) {
+      setModalConfig({
+        title: 'Anamnesis Vacía',
+        message: '⚠️ ADVERTENCIA: No has marcado ninguna condición de salud en la Anamnesis. ¿Deseas continuar de todas formas?',
+        onConfirm: executeSave
+      });
+      setShowModal(true);
+      return;
+    }
+
+    // Advertencia Odontograma
+    const hasOdontogramaData = 
+      Object.keys(odontogramaData.adult?.teethState || {}).length > 0 ||
+      Object.keys(odontogramaData.child?.teethState || {}).length > 0 ||
+      odontogramaData.observaciones?.trim();
+
+    if (!hasOdontogramaData) {
+      setModalConfig({
+        title: 'Odontograma Vacío',
+        message: '⚠️ ADVERTENCIA: El Odontograma no contiene registros. ¿Deseas guardar la ficha así?',
+        onConfirm: executeSave
+      });
+      setShowModal(true);
+      return;
+    }
+
+    executeSave();
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'odontograma':
-        return <Odontograma 
-          onDataChange={setOdontogramaData}
-          initialData={odontogramaData}
-        />;
+        return <Odontograma onDataChange={setOdontogramaData} initialData={odontogramaData} />;
       case 'datos':
-        return <DatosPersonales 
-          patientData={patientData} 
-          setPatientData={setPatientData} 
-        />;
+        return <DatosPersonales patientData={patientData} setPatientData={setPatientData} />;
       case 'consentimiento':
-        return <Consentimiento 
-          patientData={patientData}
-          user={user}
-          consentData={consentData}
-          setConsentData={setConsentData}
-        />;
+        return <Consentimiento patientData={patientData} user={user} consentData={consentData} setConsentData={setConsentData} />;
       case 'anamnesis':
-        return <Anamnesis 
-          anamnesisData={anamnesisData} 
-          setAnamnesisData={setAnamnesisData} 
-        />;
+        return <Anamnesis anamnesisData={anamnesisData} setAnamnesisData={setAnamnesisData} />;
       case 'tratamientos':
         return (
-          <div>
-            <div className="treatments-section">
-              <h3>Tratamientos Realizados</h3>
-              <table className="treatments-table">
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Código</th>
-                    <th>Dientes</th>
-                    <th>Caras</th>
-                    <th>Observaciones</th>
+          <div className="treatments-section">
+            <h3>Tratamientos Realizados</h3>
+            <table className="treatments-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Código</th>
+                  <th>Dientes</th>
+                  <th>Caras</th>
+                  <th>Observaciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {odontogramaData.treatments.map((treatment, index) => (
+                  <tr key={index}>
+                    <td>{treatment.date || 'N/A'}</td>
+                    <td>{treatment.code || 'N/A'}</td>
+                    <td>{treatment.tooth_elements || 'N/A'}</td>
+                    <td>{treatment.faces || 'N/A'}</td>
+                    <td>{treatment.observations || 'N/A'}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {odontogramaData.treatments.map((treatment, index) => (
-                    <tr key={index}>
-                      <td>{treatment.date || 'N/A'}</td>
-                      <td>{treatment.code || 'N/A'}</td>
-                      <td>{treatment.tooth_elements || 'N/A'}</td>
-                      <td>{treatment.faces || 'N/A'}</td>
-                      <td>{treatment.observations || 'N/A'}</td>
-                    </tr>
-                  ))}
-                  <tr className="new-treatment-row">
-                    <td>
-                      <input
-                        type="date"
-                        value={newTreatment.date}
-                        onChange={(e) => setNewTreatment({...newTreatment, date: e.target.value})}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        value={newTreatment.code}
-                        onChange={(e) => setNewTreatment({...newTreatment, code: e.target.value.slice(0, 30)})}
-                        maxLength="30"
-                        placeholder="Máx 30 caracteres"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        value={newTreatment.tooth_elements}
-                        onChange={(e) => setNewTreatment({...newTreatment, tooth_elements: e.target.value.slice(0, 30)})}
-                        maxLength="30"
-                        placeholder="Máx 30 caracteres"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        value={newTreatment.faces}
-                        onChange={(e) => setNewTreatment({...newTreatment, faces: e.target.value.slice(0, 30)})}
-                        maxLength="30"
-                        placeholder="Máx 30 caracteres"
-                      />
-                    </td>
-                    <td>
-                      <textarea
-                        value={newTreatment.observations}
-                        onChange={(e) => setNewTreatment({...newTreatment, observations: e.target.value.slice(0, 500)})}
-                        maxLength="500"
-                        rows="2"
-                        placeholder="Máx 500 caracteres"
-                      ></textarea>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <button
-                className="btn-primary small"
-                onClick={() => {
-                  const treatmentToAdd = {
-                    date: newTreatment.date || new Date().toISOString().split('T')[0],
-                    code: newTreatment.code,
-                    tooth_elements: newTreatment.tooth_elements,
-                    faces: newTreatment.faces,
-                    observations: newTreatment.observations
-                  };
-                  const updatedTreatments = [...odontogramaData.treatments, treatmentToAdd];
-                  setOdontogramaData(prev => ({ ...prev, treatments: updatedTreatments }));
-                  setNewTreatment({ date: '', code: '', tooth_elements: '', faces: '', observations: '' });
-                }}
-                disabled={!newTreatment.code && !newTreatment.tooth_elements && !newTreatment.faces && !newTreatment.observations}
-                style={{
-                  opacity: (!newTreatment.code && !newTreatment.tooth_elements && !newTreatment.faces && !newTreatment.observations) ? 0.5 : 1,
-                  cursor: (!newTreatment.code && !newTreatment.tooth_elements && !newTreatment.faces && !newTreatment.observations) ? 'not-allowed' : 'pointer'
-                }}
-              >
-                Agregar Tratamiento
-              </button>
-            </div>
+                ))}
+                <tr className="new-treatment-row">
+                  <td><input type="date" value={newTreatment.date} onChange={(e) => setNewTreatment({...newTreatment, date: e.target.value})} /></td>
+                  <td><input type="text" value={newTreatment.code} onChange={(e) => setNewTreatment({...newTreatment, code: e.target.value})} maxLength="30" /></td>
+                  <td><input type="text" value={newTreatment.tooth_elements} onChange={(e) => setNewTreatment({...newTreatment, tooth_elements: e.target.value})} maxLength="30" /></td>
+                  <td><input type="text" value={newTreatment.faces} onChange={(e) => setNewTreatment({...newTreatment, faces: e.target.value})} maxLength="30" /></td>
+                  <td><textarea value={newTreatment.observations} onChange={(e) => setNewTreatment({...newTreatment, observations: e.target.value})} maxLength="500"></textarea></td>
+                </tr>
+              </tbody>
+            </table>
+            <button
+              className="btn-primary small"
+              onClick={() => {
+                const treatmentToAdd = { ...newTreatment, date: newTreatment.date || new Date().toISOString().split('T')[0] };
+                setOdontogramaData(prev => ({ ...prev, treatments: [...prev.treatments, treatmentToAdd] }));
+                setNewTreatment({ date: '', code: '', tooth_elements: '', faces: '', observations: '' });
+              }}
+              disabled={!newTreatment.code && !newTreatment.observations}
+            >
+              Agregar Tratamiento
+            </button>
           </div>
         );
       default:
-        return <DatosPersonales 
-          patientData={patientData} 
-          setPatientData={setPatientData} 
-        />;
+        return <DatosPersonales patientData={patientData} setPatientData={setPatientData} />;
     }
   };
 
   return (
     <div className="app">
-      <NavBar
-        activeNav={activeNav}
-        setActiveNav={setActiveNav}
-        user={user}
-        handleLogout={handleLogout}
-      />
+      <NavBar activeNav={activeNav} setActiveNav={setActiveNav} user={user} handleLogout={handleLogout} />
 
       <main className="main-content">
         <div className="patient-record-container">
@@ -435,19 +324,13 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
                 <Printer size={18} />
                 <span>Imprimir Ficha</span>
               </button>
-              <button 
-                className="btn-primary"
-                onClick={handleSaveAll}
-                disabled={loading}
-                title="Guardar paciente completo"
-              >
+              <button className="btn-primary" onClick={handleSaveAll} disabled={loading}>
                 <Save size={18} />
                 <span>{loading ? 'Guardando...' : 'Guardar Todo'}</span>
               </button>
             </div>
           </div>
 
-          {/* Mensaje de estado */}
           {message.text && (
             <div className={`message-alert message-${message.type}`}>
               <AlertCircle size={18} />
@@ -455,7 +338,6 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
             </div>
           )}
 
-          {/* Pestañas de navegación */}
           <div className="record-tabs">
             {tabs.map(tab => (
               <button
@@ -463,65 +345,64 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
                 className={`record-tab ${activeTab === tab.id ? 'active' : ''}`}
                 onClick={() => setActiveTab(tab.id)}
               >
-                <div className="tab-icon">
-                  {tab.icon}
-                </div>
+                <div className="tab-icon">{tab.icon}</div>
                 <span>{tab.label}</span>
               </button>
             ))}
           </div>
 
-          {/* Contenido principal */}
           <div className="record-content">
             {renderContent()}
           </div>
 
-          {/* Navegación y Progreso */}
           <div className="progress-footer">
             <div className="progress-info">
               <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{ width: `${((tabs.findIndex(tab => tab.id === activeTab) + 1) / tabs.length) * 100}%` }}
-                ></div>
+                <div className="progress-fill" style={{ width: `${((tabs.findIndex(t => t.id === activeTab) + 1) / tabs.length) * 100}%` }}></div>
               </div>
-              <span className="progress-text">
-                Paso {tabs.findIndex(tab => tab.id === activeTab) + 1} de {tabs.length}
-              </span>
+              <span className="progress-text">Paso {tabs.findIndex(t => t.id === activeTab) + 1} de {tabs.length}</span>
             </div>
             <div className="progress-actions">
-              {tabs.findIndex(tab => tab.id === activeTab) > 0 && (
-                <button
-                  className="btn-secondary"
-                  onClick={() => {
-                    const currentIndex = tabs.findIndex(tab => tab.id === activeTab);
-                    if (currentIndex > 0) {
-                      setActiveTab(tabs[currentIndex - 1].id);
-                    }
-                  }}
-                >
-                  <ChevronLeft size={18} />
-                  <span>Anterior</span>
+              {tabs.findIndex(t => t.id === activeTab) > 0 && (
+                <button className="btn-secondary" onClick={() => setActiveTab(tabs[tabs.findIndex(t => t.id === activeTab) - 1].id)}>
+                  <ChevronLeft size={18} /> <span>Anterior</span>
                 </button>
               )}
-              {tabs.findIndex(tab => tab.id === activeTab) < tabs.length - 1 && (
-                <button
-                  className="btn-secondary"
-                  onClick={() => {
-                    const currentIndex = tabs.findIndex(tab => tab.id === activeTab);
-                    if (currentIndex < tabs.length - 1) {
-                      setActiveTab(tabs[currentIndex + 1].id);
-                    }
-                  }}
-                >
-                  <span>Siguiente</span>
-                  <ChevronRight size={18} />
+              {tabs.findIndex(t => t.id === activeTab) < tabs.length - 1 && (
+                <button className="btn-secondary" onClick={() => setActiveTab(tabs[tabs.findIndex(t => t.id === activeTab) + 1].id)}>
+                  <span>Siguiente</span> <ChevronRight size={18} />
                 </button>
               )}
             </div>
           </div>
         </div>
       </main>
+
+      {/* MODAL DE CONFIRMACIÓN */}
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-container">
+            <div className="modal-header">
+              <div className="modal-title">
+                <AlertTriangle color="#ff9800" size={24} />
+                <h3>{modalConfig.title}</h3>
+              </div>
+              <button className="modal-close" onClick={() => setShowModal(false)}><X size={20} /></button>
+            </div>
+            <div className="modal-body">
+              <p>{modalConfig.message}</p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-secondary" onClick={() => setShowModal(false)}>
+                Cerrar
+              </button>
+              <button className="btn-primary" onClick={modalConfig.onConfirm}>
+                Confirmar y Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
