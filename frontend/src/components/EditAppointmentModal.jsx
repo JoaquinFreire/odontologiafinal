@@ -15,12 +15,15 @@ const EditAppointmentModal = ({ showModal, setShowModal, appointment, onSave, on
   useEffect(() => {
     if (appointment) {
       const dt = new Date(appointment.datetime);
+      const hour = String(dt.getHours()).padStart(2, '0');
+      const minute = String(dt.getMinutes()).padStart(2, '0');
+      const timeStr = `${hour}:${minute}`;
       setFormData({
         name: appointment.name || '',
         dni: appointment.dni || '',
         type: appointment.type || '',
         date: dt.toISOString().split('T')[0],
-        time: dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+        time: timeStr
       });
     }
   }, [appointment]);
@@ -49,6 +52,7 @@ const EditAppointmentModal = ({ showModal, setShowModal, appointment, onSave, on
         </div>
 
         <form className="appointment-form" onSubmit={handleSubmit}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
           <div className="form-group">
             <label>Nombre Paciente *</label>
             <input 
@@ -68,44 +72,37 @@ const EditAppointmentModal = ({ showModal, setShowModal, appointment, onSave, on
               onChange={handleChange}
             />
           </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '10px' }}>
           <div className="form-group">
-            <label>Tratamiento *</label>
+            <label><strong>Fecha *</strong></label>
+            <input 
+              type="date" 
+              name="date"
+              value={formData.date || ''} 
+              onChange={handleChange} 
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label><strong>Hora *</strong></label>
             <select 
-              name="type"
-              value={formData.type}
+              name="time"
+              value={formData.time || ''} 
               onChange={handleChange}
               required
             >
               <option value="">Seleccionar...</option>
-              <option value="Consulta">Consulta</option>
-              <option value="Limpieza dental">Limpieza dental</option>
-              <option value="Extracción">Extracción</option>
-              <option value="Blanqueamiento">Blanqueamiento</option>
-              <option value="Ortodoncia">Ortodoncia</option>
-              <option value="Implante dental">Implante dental</option>
-              <option value="Otro">Otro</option>
+              {Array.from({ length: (21 - 8 + 1) * 2 }, (_, i) => {
+                const hour = 8 + Math.floor(i / 2);
+                const minute = i % 2 === 0 ? '00' : '30';
+                const val = `${hour.toString().padStart(2, '0')}:${minute}`;
+                return <option key={val} value={val}>{val}</option>;
+              })}
             </select>
           </div>
-          <div className="form-group">
-            <label>Fecha *</label>
-            <input 
-              type="date" 
-              name="date"
-              value={formData.date}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Hora *</label>
-            <input 
-              type="time" 
-              name="time"
-              value={formData.time}
-              onChange={handleChange}
-              required
-            />
-          </div>
+        </div>
 
           <div className="modal-actions" style={{marginTop: '20px'}}>
             <button type="button" className="btn-outline" onClick={() => setShowModal(false)}>Cancelar</button>

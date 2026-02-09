@@ -8,7 +8,6 @@ import {
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import TodayAppointments from '../components/AppointmentSections/TodayAppointments';
-import OverdueAppointments from '../components/AppointmentSections/OverdueAppointments';
 import PendingAppointments from '../components/AppointmentSections/PendingAppointments';
 import { appointmentService } from '../services/appointmentService';
 import { getAppointmentDateLocal } from '../utils/dateUtils';
@@ -35,9 +34,8 @@ const Home = ({ user, handleLogout }) => {
   useEffect(() => {
     document.title = 'Home';
   }, []);
-  const [todayAppointments, setTodayAppointments] = useState([]);
-  const [overdueAppointments, setOverdueAppointments] = useState([]);
-  const [nextAppointments, setNextAppointments] = useState([]);
+  const [appointmentsToAttend, setAppointmentsToAttend] = useState([]); // Hoy + Atrasados
+  const [futureAppointments, setFutureAppointments] = useState([]); // Posteriores
   const [totalPending, setTotalPending] = useState(0);
   const [loading, setLoading] = useState(false);
   const [markingComplete, setMarkingComplete] = useState(null);
@@ -81,21 +79,24 @@ const Home = ({ user, handleLogout }) => {
       const today = new Date();
       const todayDateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-      setTodayAppointments(allPending.filter(app => {
-        const appointmentDateLocal = getAppointmentDateLocal(app.datetime);
-        return appointmentDateLocal === todayDateStr;
-      }));
+      // Sección 1: Turnos para Atender (hoy + atrasados)
+      const toAttend = allPending.filter(app => getAppointmentDateLocal(app.datetime) <= todayDateStr);
       
-      setOverdueAppointments(allPending.filter(app => {
-        const appointmentDateLocal = getAppointmentDateLocal(app.datetime);
-        return appointmentDateLocal < todayDateStr;
-      }));
-      
-      setNextAppointments(allPending.filter(app => {
-        const appointmentDateLocal = getAppointmentDateLocal(app.datetime);
-        return appointmentDateLocal > todayDateStr;
-      }));
-      
+      // Sección 2: Turnos Posteriores (futuros)
+      const future = allPending.filter(app => getAppointmentDateLocal(app.datetime) > todayDateStr);
+
+      // Ordenar ambas listas por fecha y hora ascendente (primero los urgentes)
+      const sortByDatetimeAsc = (a, b) => {
+        const ta = new Date(a.datetime).getTime();
+        const tb = new Date(b.datetime).getTime();
+        return ta - tb;
+      };
+
+      toAttend.sort(sortByDatetimeAsc);
+      future.sort(sortByDatetimeAsc);
+
+      setAppointmentsToAttend(toAttend);
+      setFutureAppointments(future);
       setTotalPending(allPending.length);
     } catch (error) {
       console.error('Error al cargar datos:', error);
@@ -232,13 +233,10 @@ const Home = ({ user, handleLogout }) => {
 
           <div className="stats-grid">
             <div className="stat-card kpi-card">
-              <div className="stat-info"><h3>{todayAppointments.length}</h3><p>Turnos hoy</p></div>
+              <div className="stat-info"><h3>{appointmentsToAttend.length}</h3><p>Turnos para atender</p></div>
             </div>
             <div className="stat-card kpi-card">
-              <div className="stat-info"><h3>{overdueAppointments.length}</h3><p>Turnos atrasados</p></div>
-            </div>
-            <div className="stat-card kpi-card">
-              <div className="stat-info"><h3>{totalPending}</h3><p>Turnos pendientes</p></div>
+              <div className="stat-info"><h3>{futureAppointments.length}</h3><p>Turnos posteriores</p></div>
             </div>
           </div>
 
@@ -257,7 +255,7 @@ const Home = ({ user, handleLogout }) => {
           <div className="content-grid">
             <div className="left-column">
               <TodayAppointments
-                appointments={todayAppointments}
+                appointments={appointmentsToAttend}
                 markingComplete={markingComplete}
                 onMarkAsCompleted={handleMarkAsCompleted}
                 onOpenRescheduleModal={handleOpenRescheduleModal}
@@ -265,18 +263,10 @@ const Home = ({ user, handleLogout }) => {
                 onOpenModal={() => setShowModal(true)}
                 formatAppointmentName={formatAppointmentName}
               />
-              <OverdueAppointments
-                appointments={overdueAppointments}
-                markingComplete={markingComplete}
-                onMarkAsCompleted={handleMarkAsCompleted}
-                onOpenRescheduleModal={handleOpenRescheduleModal}
-                onDeleteAppointment={handleDeleteAppointment}
-                formatAppointmentName={formatAppointmentName}
-              />
             </div>
             <div className="right-column">
               <PendingAppointments
-                appointments={nextAppointments}
+                appointments={futureAppointments}
                 markingComplete={markingComplete}
                 onMarkAsCompleted={handleMarkAsCompleted}
                 onOpenRescheduleModal={handleOpenRescheduleModal}

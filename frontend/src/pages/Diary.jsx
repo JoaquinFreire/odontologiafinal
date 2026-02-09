@@ -4,8 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import NewAppointmentModal from '../components/NewAppointmentModal';
 import EditAppointmentModal from '../components/EditAppointmentModal';
+import TodayAppointments from '../components/AppointmentSections/TodayAppointments';
+import PendingAppointments from '../components/AppointmentSections/PendingAppointments';
 import { appointmentService } from '../services/appointmentService';
-import { ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { getAppointmentDateLocal } from '../utils/dateUtils';
+import { ChevronLeft, ChevronRight, CheckCircle2, PlusCircle } from 'lucide-react';
 import '../styles/calendar.css';
 
 const Diary = ({ user, handleLogout }) => {
