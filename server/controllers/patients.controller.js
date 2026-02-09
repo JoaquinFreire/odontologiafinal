@@ -291,14 +291,8 @@ const saveCompletePatient = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Nombre, Apellido y DNI son requeridos' });
     }
 
-    const hasAnyDisease = Object.values(anamnesisData.diseases).some(value => value === true);
-    if (!hasAnyDisease) {
-      return res.status(400).json({ success: false, error: 'Debe marcar al menos una condición en la anamnesis' });
-    }
-
-    if (!consentData?.accepted) {
-      return res.status(400).json({ success: false, error: 'Debe aceptar el consentimiento informado' });
-    }
+    // Las enfermedades (anamnesis) son opcionales
+    // El consentimiento es opcional
 
     // 1. Guardar paciente
     const patientPayload = {
@@ -471,8 +465,8 @@ const updatePatientConsent = async (req, res) => {
     const consentData = req.body;
 
     const [result] = await pool.execute(
-      'UPDATE consent SET text = ?, datetime = ?, accepted = ?, doctorName = ?, doctorMatricula = ? WHERE patient_id = ?',
-      [consentData.text, new Date(consentData.datetime), consentData.accepted, consentData.doctorName || '', consentData.doctorMatricula || '', patientId]
+      'UPDATE consent SET text = ?, datetime = ?, accepted = ? WHERE patient_id = ?',
+      [consentData.text, new Date(consentData.datetime), consentData.accepted, patientId]
     );
 
     res.json({ success: true, message: 'Consentimiento actualizado correctamente' });
