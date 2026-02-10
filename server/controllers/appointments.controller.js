@@ -1,20 +1,9 @@
 const pool = require('../config/database');
 
-// Convertir hora local (Argentina UTC-3) a UTC
-// dateStr: "2026-02-10", timeStr: "21:00" → UTC datetime string
-const convertArgentinaToUTC = (dateStr, timeStr) => {
-  // Crear fecha en zona local (Argentina UTC-3)
-  const localDate = new Date(`${dateStr}T${timeStr}:00`);
-  // Convertir a UTC: sumar 3 horas (ya que UTC-3 significa estar 3 horas atrás)
-  const utcDate = new Date(localDate.getTime() + 3 * 60 * 60 * 1000);
-  // Retornar en formato "YYYY-MM-DD HH:MM:SS" para MySQL
-  return utcDate.toISOString().slice(0, 19).replace('T', ' ');
-};
-
-// Convertir datetime de MySQL (UTC) a ISO format con Z para que JavaScript lo interprete como UTC
+// Convertir datetime de MySQL a ISO format con Z para que JavaScript lo interprete correctamente
 const convertMySQLDateToISO = (datetimeStr) => {
   if (!datetimeStr) return null;
-  // Si es una cadena tipo "2026-02-11 00:00:00", convertir a ISO "2026-02-11T00:00:00Z"
+  // Si es una cadena tipo "2026-02-11 09:00:00", convertir a ISO "2026-02-11T09:00:00Z"
   if (typeof datetimeStr === 'string') {
     return datetimeStr.replace(' ', 'T') + 'Z';
   }
@@ -120,7 +109,8 @@ const createAppointment = async (req, res) => {
     const userId = req.user.id;
     const { name, date, time, dni, type } = req.body;
 
-    const datetime = convertArgentinaToUTC(date, time);
+    // Guardar exactamente como viene del frontend: "2026-02-10 21:00:00"
+    const datetime = `${date} ${time}:00`;
 
     const [result] = await pool.execute(
       'INSERT INTO shift (name, datetime, dni, type, status, user_id) VALUES (?, ?, ?, ?, false, ?)',
@@ -205,7 +195,8 @@ const updateAppointment = async (req, res) => {
     }
     if (date && time) {
       updateFields.push('datetime = ?');
-      updateValues.push(convertArgentinaToUTC(date, time));
+      // Guardar exactamente como viene: "2026-02-10 21:00:00"
+      updateValues.push(`${date} ${time}:00`);
     }
     if (dni !== undefined) {
       updateFields.push('dni = ?');
