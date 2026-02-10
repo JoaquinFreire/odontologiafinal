@@ -151,7 +151,7 @@ export const updatePatientAnamnesis = async (patientId, anamnesisData, userId, a
 };
 
 // Obtener todos los pacientes del usuario actual CON PAGINACIÓN
-export const getAllPatients = async (page = 1, pageSize = 10, searchTerm = '') => {
+export const getAllPatients = async (page = 1, pageSize = 10, searchTerm = '', signal) => {
   try {
     const url = new URL(`${API_BASE_URL}/patients`);
     url.searchParams.append('page', page);
@@ -161,6 +161,7 @@ export const getAllPatients = async (page = 1, pageSize = 10, searchTerm = '') =
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
+      signal
     });
 
     if (!response.ok) {

@@ -95,8 +95,10 @@ const Diary = ({ user, handleLogout }) => {
       setLoading(true);
       const date = formData.date || selectedSlot.date;
       const time = formData.time || selectedSlot.time;
+      const capitalizedName = formData.name.charAt(0).toUpperCase() + formData.name.slice(1).toLowerCase();
       await appointmentService.createAppointment({
         ...formData,
+        name: capitalizedName,
         date,
         time
       }, user.id);
@@ -113,7 +115,8 @@ const Diary = ({ user, handleLogout }) => {
   const handleUpdateAppointment = async (id, data) => {
     try {
       setLoading(true);
-      await appointmentService.updateAppointment(id, data, user.id);
+      const capitalizedName = data.name.charAt(0).toUpperCase() + data.name.slice(1).toLowerCase();
+      await appointmentService.updateAppointment(id, {...data, name: capitalizedName}, user.id);
       setShowEditModal(false);
       triggerSuccess("Turno actualizado correctamente");
     } catch (error) {
