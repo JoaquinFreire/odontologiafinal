@@ -65,9 +65,11 @@ export const parseISOToLocal = (isoString) => {
  */
 export const getAppointmentDateLocal = (isoDateTimeString) => {
   const appointmentDate = new Date(isoDateTimeString);
-  const offset = appointmentDate.getTimezoneOffset() * 60000;
-  const localDate = new Date(appointmentDate.getTime() - offset);
-  return localDate.toISOString().split('T')[0];
+  // getFullYear(), getMonth(), getDate() devuelven la fecha/hora en zona horaria LOCAL del navegador
+  const year = appointmentDate.getFullYear();
+  const month = String(appointmentDate.getMonth() + 1).padStart(2, '0');
+  const day = String(appointmentDate.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 /**
@@ -77,7 +79,8 @@ export const getAppointmentDateLocal = (isoDateTimeString) => {
  */
 export const getAppointmentTimeLocal = (isoDateTimeString) => {
   const appointmentDate = new Date(isoDateTimeString);
-  const offset = appointmentDate.getTimezoneOffset() * 60000;
-  const localDate = new Date(appointmentDate.getTime() - offset);
-  return localDate.toISOString().split('T')[1].slice(0, 5);
+  // getHours() y getMinutes() devuelven la hora/minutos en zona horaria LOCAL del navegador
+  const hours = String(appointmentDate.getHours()).padStart(2, '0');
+  const minutes = String(appointmentDate.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
 };

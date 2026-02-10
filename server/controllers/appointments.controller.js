@@ -1,5 +1,30 @@
 const pool = require('../config/database');
 
+// Convertir hora local (Argentina UTC-3) a UTC
+// dateStr: "2026-02-10", timeStr: "21:00" → UTC datetime string
+const convertArgentinaToUTC = (dateStr, timeStr) => {
+  // Crear fecha en zona local (Argentina UTC-3)
+  const localDate = new Date(`${dateStr}T${timeStr}:00`);
+  // Convertir a UTC: sumar 3 horas (ya que UTC-3 significa estar 3 horas atrás)
+  const utcDate = new Date(localDate.getTime() + 3 * 60 * 60 * 1000);
+  // Retornar en formato "YYYY-MM-DD HH:MM:SS" para MySQL
+  return utcDate.toISOString().slice(0, 19).replace('T', ' ');
+};
+
+// Convertir datetime de MySQL (UTC) a ISO format con Z para que JavaScript lo interprete como UTC
+const convertMySQLDateToISO = (datetimeStr) => {
+  if (!datetimeStr) return null;
+  // Si es una cadena tipo "2026-02-11 00:00:00", convertir a ISO "2026-02-11T00:00:00Z"
+  if (typeof datetimeStr === 'string') {
+    return datetimeStr.replace(' ', 'T') + 'Z';
+  }
+  // Si ya es un Date object de MySQL, convertir a ISO
+  if (datetimeStr instanceof Date) {
+    return datetimeStr.toISOString();
+  }
+  return datetimeStr;
+};
+
 // Obtener turnos de hoy
 const getTodayAppointments = async (req, res) => {
   try {
@@ -14,7 +39,12 @@ const getTodayAppointments = async (req, res) => {
       [userId, startOfDay.toISOString(), endOfDay.toISOString()]
     );
 
-    res.json(appointments);
+    const appointmentsWithISODates = appointments.map(app => ({
+      ...app,
+      datetime: convertMySQLDateToISO(app.datetime)
+    }));
+
+    res.json(appointmentsWithISODates);
   } catch (error) {
     console.error('Error obteniendo turnos de hoy:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -33,7 +63,12 @@ const getOverdueAppointments = async (req, res) => {
       [userId, startOfDay.toISOString()]
     );
 
-    res.json(appointments);
+    const appointmentsWithISODates = appointments.map(app => ({
+      ...app,
+      datetime: convertMySQLDateToISO(app.datetime)
+    }));
+
+    res.json(appointmentsWithISODates);
   } catch (error) {
     console.error('Error obteniendo turnos atrasados:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -85,7 +120,7 @@ const createAppointment = async (req, res) => {
     const userId = req.user.id;
     const { name, date, time, dni, type } = req.body;
 
-    const datetime = `${date} ${time}:00`;
+    const datetime = convertArgentinaToUTC(date, time);
 
     const [result] = await pool.execute(
       'INSERT INTO shift (name, datetime, dni, type, status, user_id) VALUES (?, ?, ?, ?, false, ?)',
@@ -95,7 +130,7 @@ const createAppointment = async (req, res) => {
     res.status(201).json({
       id: result.insertId,
       name,
-      datetime,
+      datetime: convertMySQLDateToISO(datetime),
       dni,
       type,
       status: false
@@ -116,7 +151,13 @@ const getAllPendingAppointments = async (req, res) => {
       [userId]
     );
 
-    res.json(appointments);
+    // Convertir datetime a ISO format para que JavaScript lo interprete como UTC
+    const appointmentsWithISODates = appointments.map(app => ({
+      ...app,
+      datetime: convertMySQLDateToISO(app.datetime)
+    }));
+
+    res.json(appointmentsWithISODates);
   } catch (error) {
     console.error('Error obteniendo turnos pendientes:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -138,7 +179,10 @@ const getAppointmentById = async (req, res) => {
       return res.status(404).json({ error: 'Turno no encontrado' });
     }
 
-    res.json(appointments[0]);
+    const appointment = appointments[0];
+    appointment.datetime = convertMySQLDateToISO(appointment.datetime);
+
+    res.json(appointment);
   } catch (error) {
     console.error('Error obteniendo turno:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -161,7 +205,7 @@ const updateAppointment = async (req, res) => {
     }
     if (date && time) {
       updateFields.push('datetime = ?');
-      updateValues.push(`${date} ${time}:00`);
+      updateValues.push(convertArgentinaToUTC(date, time));
     }
     if (dni !== undefined) {
       updateFields.push('dni = ?');
