@@ -34,7 +34,8 @@ const EditAppointmentModal = ({ showModal, setShowModal, appointment, onSave, on
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(appointment.id, formData);
+    const capitalizedName = formData.name.charAt(0).toUpperCase() + formData.name.slice(1).toLowerCase();
+    onSave(appointment.id, {...formData, name: capitalizedName});
   };
 
   const handleDelete = () => {
@@ -44,11 +45,11 @@ const EditAppointmentModal = ({ showModal, setShowModal, appointment, onSave, on
   if (!showModal || !appointment) return null;
 
   return (
-    <div className="modal-overlay" onClick={() => setShowModal(false)}>
+    <div className="modal-overlay" onClick={() => !loading && setShowModal(false)}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h3>Editar Turno</h3>
-          <button className="modal-close" onClick={() => setShowModal(false)}><X size={20}/></button>
+          <button className="modal-close" onClick={() => !loading && setShowModal(false)} disabled={loading}><X size={20}/></button>
         </div>
 
         <form className="appointment-form" onSubmit={handleSubmit}>
@@ -59,17 +60,20 @@ const EditAppointmentModal = ({ showModal, setShowModal, appointment, onSave, on
               type="text" 
               name="name"
               value={formData.name}
-              onChange={handleChange}
+              onChange={(e) => {if (e.target.value.length <= 100) handleChange(e)}}
               required 
+              disabled={loading}
             />
           </div>
           <div className="form-group">
             <label>DNI</label>
             <input 
-              type="number" 
+              type="text" 
               name="dni"
               value={formData.dni}
-              onChange={handleChange}
+              onChange={(e) => {const onlyNumbers = e.target.value.replace(/[^0-9]/g, '').slice(0, 11); handleChange({...e, target: {...e.target, name: 'dni', value: onlyNumbers}})}}
+              disabled={loading}
+              placeholder="Sin letras"
             />
           </div>
         </div>
@@ -83,6 +87,7 @@ const EditAppointmentModal = ({ showModal, setShowModal, appointment, onSave, on
               value={formData.date || ''} 
               onChange={handleChange} 
               required
+              disabled={loading}
             />
           </div>
           <div className="form-group">
@@ -92,6 +97,7 @@ const EditAppointmentModal = ({ showModal, setShowModal, appointment, onSave, on
               value={formData.time || ''} 
               onChange={handleChange}
               required
+              disabled={loading}
             >
               <option value="">Seleccionar...</option>
               {Array.from({ length: (21 - 8 + 1) * 2 }, (_, i) => {
@@ -105,7 +111,7 @@ const EditAppointmentModal = ({ showModal, setShowModal, appointment, onSave, on
         </div>
 
           <div className="modal-actions" style={{marginTop: '20px'}}>
-            <button type="button" className="btn-outline" onClick={() => setShowModal(false)}>Cancelar</button>
+            <button type="button" className="btn-outline" onClick={() => setShowModal(false)} disabled={loading}>Cancelar</button>
             <button type="submit" className="btn-primary" disabled={loading}>
               {loading ? 'Guardando...' : 'Guardar'}
             </button>
@@ -116,17 +122,19 @@ const EditAppointmentModal = ({ showModal, setShowModal, appointment, onSave, on
         </form>
       </div>
       {showConfirmDelete && (
-        <div className="modal-overlay" onClick={() => setShowConfirmDelete(false)}>
+        <div className="modal-overlay" onClick={() => !loading && setShowConfirmDelete(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3>¿Estás seguro?</h3>
-              <button className="modal-close" onClick={() => setShowConfirmDelete(false)}><X size={20}/></button>
+              <button className="modal-close" onClick={() => !loading && setShowConfirmDelete(false)} disabled={loading}><X size={20}/></button>
             </div>
             <div style={{ padding: '16px' }}>
               <p>Esta acción eliminará el turno permanentemente. ¿Deseas continuar?</p>
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '16px' }}>
-                <button className="btn-outline" onClick={() => setShowConfirmDelete(false)}>Cancelar</button>
-                <button className="btn-primary" onClick={() => { setShowConfirmDelete(false); onDelete(appointment.id); }}>Eliminar</button>
+                <button className="btn-outline" onClick={() => setShowConfirmDelete(false)} disabled={loading}>Cancelar</button>
+                <button className="btn-primary" onClick={() => { setShowConfirmDelete(false); onDelete(appointment.id); }} disabled={loading}>
+                  {loading ? 'Eliminando...' : 'Eliminar'}
+                </button>
               </div>
             </div>
           </div>

@@ -15,7 +15,6 @@ export const appointmentService = {
   // Obtener turnos de hoy del usuario actual
   getTodayAppointments: async () => {
     try {
-      console.log('=== OBTENIENDO TURNOS DE HOY ===');
       
       const response = await fetch(`${API_BASE_URL}/appointments/today`, {
         method: 'GET',
@@ -27,7 +26,6 @@ export const appointmentService = {
       }
 
       const data = await response.json();
-      console.log('Today appointments:', data);
 
       return data;
     } catch (error) {
@@ -39,7 +37,6 @@ export const appointmentService = {
   // Obtener turnos atrasados del usuario actual
   getOverdueAppointments: async () => {
     try {
-      console.log('=== OBTENIENDO TURNOS ATRASADOS ===');
       
       const response = await fetch(`${API_BASE_URL}/appointments/overdue`, {
         method: 'GET',
@@ -51,7 +48,6 @@ export const appointmentService = {
       }
 
       const data = await response.json();
-      console.log('Overdue appointments:', data);
 
       return data;
     } catch (error) {
@@ -63,8 +59,6 @@ export const appointmentService = {
   // Obtener total de turnos pendientes del usuario actual
   getTotalPendingAppointments: async () => {
     try {
-      console.log('=== OBTENIENDO TOTAL DE TURNOS PENDIENTES ===');
-
       const response = await fetch(`${API_BASE_URL}/appointments/pending/total`, {
         method: 'GET',
         headers: getAuthHeaders(),
@@ -87,9 +81,6 @@ export const appointmentService = {
   // Marcar turno como atendido
   markAppointmentAsCompleted: async (id) => {
     try {
-      console.log('=== MARCANDO TURNO COMO ATENDIDO ===');
-      console.log('ID:', id);
-
       const response = await fetch(`${API_BASE_URL}/appointments/${id}/complete`, {
         method: 'PUT',
         headers: getAuthHeaders(),
@@ -139,8 +130,6 @@ export const appointmentService = {
   // Obtener todos los turnos pendientes del usuario (para filtrar en frontend)
   getAllPendingAppointments: async () => {
     try {
-      console.log('=== OBTENIENDO TODOS LOS TURNOS PENDIENTES ===');
-
       const response = await fetch(`${API_BASE_URL}/appointments/pending`, {
         method: 'GET',
         headers: getAuthHeaders(),

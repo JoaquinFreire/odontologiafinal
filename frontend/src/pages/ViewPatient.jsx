@@ -12,6 +12,7 @@ const ViewPatient = ({ user }) => {
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [searchInput, setSearchInput] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalPatients, setTotalPatients] = useState(0);
@@ -29,20 +30,44 @@ const ViewPatient = ({ user }) => {
     });
 
     useEffect(() => {
-        const load = async () => {
-            if (!user?.id) return;
-            try {
-                setLoading(true);
-                const result = await getAllPatients(currentPage, patientsPerPage, searchTerm);
-                if (result.success) {
-                    setPatients(result.data);
-                    setTotalPages(result.pagination.totalPages);
-                    setTotalPatients(result.pagination.totalPatients);
-                }
-            } catch (error) { console.error(error); } finally { setLoading(false); }
-        };
-        load();
+            const controller = new AbortController();
+            const signal = controller.signal;
+            const load = async () => {
+                if (!user?.id) return;
+                try {
+                    setLoading(true);
+                    // clear current list while loading to avoid accidental accumulation
+                    setPatients([]);
+                    console.log('ViewPatient: requesting patients', { page: currentPage, pageSize: patientsPerPage, search: searchTerm });
+                    const result = await getAllPatients(currentPage, patientsPerPage, searchTerm.trim(), signal);
+                    if (result && result.success) {
+                        setPatients(result.data || []);
+                        setTotalPages(result.pagination?.totalPages || 1);
+                        setTotalPatients(result.pagination?.totalPatients || 0);
+                        console.log('ViewPatient: loaded', { received: (result.data || []).length, pagination: result.pagination });
+                    } else {
+                        // if server returned unexpected shape, fallback to empty
+                        setPatients([]);
+                        setTotalPages(1);
+                        setTotalPatients(0);
+                    }
+                } catch (error) {
+                    if (error.name === 'AbortError') { console.log('ViewPatient: request aborted'); return; }
+                    console.error(error);
+                } finally { setLoading(false); }
+            };
+            load();
+            return () => controller.abort();
     }, [user, currentPage, searchTerm]);
+
+    // Trigger search only on Enter or button click
+    const triggerSearch = () => {
+        const trimmed = searchInput.trim();
+        if (trimmed !== searchTerm) {
+            setCurrentPage(1);
+            setSearchTerm(trimmed);
+        }
+    };
 
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
@@ -93,13 +118,14 @@ const ViewPatient = ({ user }) => {
 
                     <div className="search-section">
                         <div className="search-container">
-                            <div className="search-input-wrapper">
+                                <div className="search-input-wrapper">
                                 <Search size={18} className="search-icon" />
                                 <input 
                                     type="text" 
                                     placeholder="Buscar por nombre o DNI..." 
-                                    value={searchTerm} 
-                                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
+                                    value={searchInput} 
+                                    onChange={(e) => { setSearchInput(e.target.value); }} 
+                                    onKeyDown={(e) => { if (e.key === 'Enter') { triggerSearch(); } }}
                                     className="search-input" 
                                 />
                             </div>
@@ -268,4 +294,4 @@ const ViewPatient = ({ user }) => {
     );
 };
 
-export default ViewPatient;s
+export default ViewPatient;

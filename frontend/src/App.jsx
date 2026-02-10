@@ -19,16 +19,13 @@ function App() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log('Verificando autenticación inicial...');
         console.log('Cookies:', document.cookie);
         
         const authenticated = await authService.checkAuth();
-        console.log('Autenticado:', authenticated);
         setIsAuthenticated(authenticated);
         
         if (authenticated) {
           const userData = await authService.getUser();
-          console.log('User data:', userData);
           setUser(userData || null);
         } else {
           setUser(null);
@@ -47,11 +44,9 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      console.log('App: Iniciando logout');
       await authService.logout();
       setIsAuthenticated(false);
       setUser(null);
-      console.log('App: Logout completado correctamente');
     } catch (error) {
       console.error('Error en logout:', error);
       // Forzar cierre aunque haya error

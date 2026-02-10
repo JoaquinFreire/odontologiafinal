@@ -143,44 +143,14 @@
   opacity: 0.7;
 }
 
-/* DESKTOP FIX */
-@media (min-width: 1200px) {
+/* TABLET Y DESKTOP FIX */
+@media (min-width: 768px) {
   .diary-app {
     display: flex;
   }
 
   .diary-main {
     flex: 1;
-  }
-
-  .dot-today {
-    width: 10px;
-    height: 10px;
-    background: #22c55e;
-    border-radius: 50%;
-    position: absolute;
-    top: 8px;
-    right: 8px;
-  }
-
-  .dot-future {
-    width: 10px;
-    height: 10px;
-    background: #0066cc;
-    border-radius: 50%;
-    position: absolute;
-    top: 8px;
-    right: 8px;
-  }
-
-  .dot-overdue {
-    width: 10px;
-    height: 10px;
-    background: #ef4444;
-    border-radius: 50%;
-    position: absolute;
-    top: 8px;
-    right: 8px;
   }
 
   .calendar-grid {

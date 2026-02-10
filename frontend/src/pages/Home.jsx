@@ -30,6 +30,8 @@ const Home = ({ user, handleLogout }) => {
   const [successMessage, setSuccessMessage] = useState('');
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [rescheduleLoading, setRescheduleLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     document.title = 'Home';
@@ -123,9 +125,10 @@ const Home = ({ user, handleLogout }) => {
     }
     setLoading(true);
     try {
+      const capitalizedName = formData.name.charAt(0).toUpperCase() + formData.name.slice(1).toLowerCase();
       // Por ahora solo visual, podrías comentar la línea de abajo si no quieres que guarde en DB aún
-      await appointmentService.createAppointment(formData, user.id);
-      setSuccessMessage(formData.name ? `Turno agendado para ${formData.name}` : 'Turno agendado correctamente');
+      await appointmentService.createAppointment({...formData, name: capitalizedName}, user.id);
+      setSuccessMessage(capitalizedName ? `Turno agendado para ${capitalizedName}` : 'Turno agendado correctamente');
       setShowSuccessModal(true);
       handleCloseModal();
       setTimeout(() => {
@@ -164,6 +167,7 @@ const Home = ({ user, handleLogout }) => {
   const confirmDelete = async () => {
     if (!confirmDeleteId) return;
     try {
+      setDeleteLoading(true);
       await appointmentService.deleteAppointment(confirmDeleteId);
       setShowConfirmDelete(false);
       setConfirmDeleteId(null);
@@ -175,6 +179,8 @@ const Home = ({ user, handleLogout }) => {
       }, 2000);
     } catch (error) {
       alert('Error al eliminar turno');
+    } finally {
+      setDeleteLoading(false);
     }
   };
   const handleOpenRescheduleModal = (app) => {
@@ -190,10 +196,12 @@ const Home = ({ user, handleLogout }) => {
   const handleRescheduleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setRescheduleLoading(true);
+      const capitalizedName = selectedAppointmentToReschedule.name.charAt(0).toUpperCase() + selectedAppointmentToReschedule.name.slice(1).toLowerCase();
       await appointmentService.updateAppointment(selectedAppointmentToReschedule.id, {
         date: rescheduleForm.date,
         time: rescheduleForm.time,
-        name: selectedAppointmentToReschedule.name,
+        name: capitalizedName,
         type: selectedAppointmentToReschedule.type,
         dni: selectedAppointmentToReschedule.dni
       });
@@ -206,6 +214,8 @@ const Home = ({ user, handleLogout }) => {
       }, 2000);
     } catch (error) {
       alert('Error al reprogramar');
+    } finally {
+      setRescheduleLoading(false);
     }
   };
 
@@ -280,16 +290,16 @@ const Home = ({ user, handleLogout }) => {
 
       {/* MODAL DE REGISTRO */}
       {showModal && (
-        <div className="modal-overlay" onClick={handleCloseModal}>
+        <div className="modal-overlay" onClick={() => !loading && handleCloseModal()}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Agendar Nuevo Turno</h2>
-              <button className="modal-close" onClick={handleCloseModal}>&times;</button>
+              <button className="modal-close" onClick={() => !loading && handleCloseModal()} disabled={loading}>&times;</button>
             </div>
             <form className="appointment-form" onSubmit={handleSubmitAppointment}>
               <div className="form-group">
                 <label>Nombre completo</label>
-                <input type="text" name="name" value={formData.name} onChange={handleFormChange} disabled={loading} />
+                <input type="text" name="name" value={formData.name} onChange={(e) => {if (e.target.value.length <= 100) handleFormChange(e)}} disabled={loading} />
               </div>
 
               <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
@@ -323,14 +333,14 @@ const Home = ({ user, handleLogout }) => {
                 {formData.type === 'Otro' && (
                   <div className="form-group">
                     <label>Describir Tratamiento *</label>
-                    <textarea name="other_treatment" value={formData.other_treatment} onChange={handleFormChange} placeholder="Describa el tratamiento" required />
+                    <textarea name="other_treatment" value={formData.other_treatment} onChange={handleFormChange} placeholder="Describa el tratamiento" required disabled={loading} />
                   </div>
                 )}
               </div>
 
               <div className="form-group">
                 <label>DNI</label>
-                <input type="number" name="dni" value={formData.dni} onChange={handleFormChange} disabled={loading} />
+                <input type="text" name="dni" value={formData.dni} onChange={(e) => {const onlyNumbers = e.target.value.replace(/[^0-9]/g, '').slice(0, 11); handleFormChange({...e, target: {...e.target, name: 'dni', value: onlyNumbers}})}} disabled={loading} placeholder="Sin letras" />
               </div>
 
               <div className="modal-actions" style={{ marginTop: '20px' }}>
@@ -343,22 +353,22 @@ const Home = ({ user, handleLogout }) => {
       )}
 
       {showRescheduleModal && selectedAppointmentToReschedule && (
-        <div className="modal-overlay" onClick={() => setShowRescheduleModal(false)}>
+        <div className="modal-overlay" onClick={() => !rescheduleLoading && setShowRescheduleModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Reprogramar Turno</h3>
-              <button onClick={() => setShowRescheduleModal(false)} className="close-btn">×</button>
+              <button onClick={() => !rescheduleLoading && setShowRescheduleModal(false)} className="close-btn" disabled={rescheduleLoading}>×</button>
             </div>
             <div className="modal-content">
               <form onSubmit={handleRescheduleSubmit}>
                 <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                   <div className="form-group">
                     <label>Fecha</label>
-                    <input type="date" value={rescheduleForm.date} onChange={e => setRescheduleForm({...rescheduleForm, date: e.target.value})} required />
+                    <input type="date" value={rescheduleForm.date} onChange={e => setRescheduleForm({...rescheduleForm, date: e.target.value})} required disabled={rescheduleLoading} />
                   </div>
                   <div className="form-group">
                     <label>Hora</label>
-                    <select value={rescheduleForm.time} onChange={e => setRescheduleForm({...rescheduleForm, time: e.target.value})} required>
+                    <select value={rescheduleForm.time} onChange={e => setRescheduleForm({...rescheduleForm, time: e.target.value})} required disabled={rescheduleLoading}>
                       <option value="">Seleccionar...</option>
                       {Array.from({ length: (21 - 8 + 1) * 2 }, (_, i) => {
                         const hour = 8 + Math.floor(i / 2);
@@ -370,8 +380,8 @@ const Home = ({ user, handleLogout }) => {
                   </div>
                 </div>
                 <div className="modal-actions">
-                  <button type="button" className="btn-outline cancel" onClick={() => setShowRescheduleModal(false)}>Cancelar</button>
-                  <button type="submit" className="btn-primary" disabled={loading}>{loading ? 'Reprogramando...' : 'Reprogramar'}</button>
+                  <button type="button" className="btn-outline cancel" onClick={() => setShowRescheduleModal(false)} disabled={rescheduleLoading}>Cancelar</button>
+                  <button type="submit" className="btn-primary" disabled={rescheduleLoading}>{rescheduleLoading ? 'Reprogramando...' : 'Reprogramar'}</button>
                 </div>
               </form>
             </div>
@@ -388,17 +398,17 @@ const Home = ({ user, handleLogout }) => {
         </div>
       )}
       {showConfirmDelete && (
-        <div className="modal-overlay" onClick={() => setShowConfirmDelete(false)}>
+        <div className="modal-overlay" onClick={() => !deleteLoading && setShowConfirmDelete(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>¿Estás seguro?</h3>
-              <button className="modal-close" onClick={() => setShowConfirmDelete(false)}>&times;</button>
+              <button className="modal-close" onClick={() => !deleteLoading && setShowConfirmDelete(false)} disabled={deleteLoading}>&times;</button>
             </div>
             <div style={{ padding: '16px' }}>
               <p>Esta acción eliminará el turno permanentemente. ¿Deseas continuar?</p>
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '16px' }}>
-                <button className="btn-outline cancel" onClick={() => setShowConfirmDelete(false)}>Cancelar</button>
-                <button className="btn-primary" onClick={confirmDelete}>Eliminar</button>
+                <button className="btn-outline cancel" onClick={() => setShowConfirmDelete(false)} disabled={deleteLoading}>Cancelar</button>
+                <button className="btn-primary" onClick={confirmDelete} disabled={deleteLoading}>{deleteLoading ? 'Eliminando...' : 'Eliminar'}</button>
               </div>
             </div>
           </div>

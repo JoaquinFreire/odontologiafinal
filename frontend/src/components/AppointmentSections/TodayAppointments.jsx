@@ -58,7 +58,7 @@ const TodayAppointments = ({
                   <User size={14} />
                   <h5>{formatAppointmentName(app)}</h5>
                 </div>
-                <p>{app.type}</p>
+                <p>{new Date(app.datetime).toLocaleDateString('es-ES')}</p>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-around' }}>
                 <button

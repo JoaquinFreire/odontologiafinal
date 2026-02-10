@@ -5,11 +5,11 @@ const NewAppointmentModal = ({ showModal, setShowModal, selectedSlot, formData, 
   if (!showModal) return null;
 
   return (
-    <div className="modal-overlay" onClick={() => setShowModal(false)}>
+    <div className="modal-overlay" onClick={() => !loading && setShowModal(false)}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h3>Nuevo Turno</h3>
-          <button className="modal-close" onClick={() => setShowModal(false)}><X size={20}/></button>
+          <button className="modal-close" onClick={() => !loading && setShowModal(false)} disabled={loading}><X size={20}/></button>
         </div>
         
         <form className="appointment-form" onSubmit={handleSubmit}>
@@ -19,15 +19,18 @@ const NewAppointmentModal = ({ showModal, setShowModal, selectedSlot, formData, 
               <input 
                 type="text" 
                 value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e) => {if (e.target.value.length <= 100) setFormData(prev => ({ ...prev, name: e.target.value }))}}
+                disabled={loading}
               />
             </div>
             <div className="form-group">
               <label>DNI</label>
               <input 
-                type="number" 
+                type="text" 
                 value={formData.dni}
-                onChange={(e) => setFormData(prev => ({ ...prev, dni: e.target.value }))}
+                onChange={(e) => {const onlyNumbers = e.target.value.replace(/[^0-9]/g, '').slice(0, 11); setFormData(prev => ({ ...prev, dni: onlyNumbers }))}}
+                disabled={loading}
+                placeholder="Sin letras"
               />
             </div>
           </div>
@@ -41,6 +44,7 @@ const NewAppointmentModal = ({ showModal, setShowModal, selectedSlot, formData, 
                 value={formData.date || selectedSlot.date || new Date().toISOString().split('T')[0]} 
                 onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))} 
                 required
+                disabled={loading}
               />
             </div>
             <div className="form-group">
@@ -49,6 +53,7 @@ const NewAppointmentModal = ({ showModal, setShowModal, selectedSlot, formData, 
                 value={formData.time || selectedSlot.time || ''} 
                 onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
                 required
+                disabled={loading}
               >
                 <option value="">Seleccionar...</option>
                 {Array.from({ length: (21 - 8 + 1) * 2 }, (_, i) => {
@@ -66,6 +71,7 @@ const NewAppointmentModal = ({ showModal, setShowModal, selectedSlot, formData, 
               value={formData.type}
               onChange={(e) => setFormData({...formData, type: e.target.value})}
               required
+              disabled={loading}
             >
               <option value="">Seleccionar...</option>
               <option value="Consulta">Consulta</option>
@@ -86,12 +92,13 @@ const NewAppointmentModal = ({ showModal, setShowModal, selectedSlot, formData, 
                 onChange={(e) => setFormData({...formData, other_treatment: e.target.value})}
                 placeholder="Describa el tratamiento a realizar"
                 required
+                disabled={loading}
               />
             </div>
           )}
 
           <div className="modal-actions" style={{marginTop: '20px'}}>
-            <button type="button" className="btn-outline cancel" onClick={() => setShowModal(false)}>Cancelar</button>
+            <button type="button" className="btn-outline cancel" onClick={() => setShowModal(false)} disabled={loading}>Cancelar</button>
             <button type="submit" className="btn-primary" disabled={loading}>
               {loading ? 'Guardando...' : 'Confirmar Turno'}
             </button>

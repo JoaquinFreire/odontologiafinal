@@ -109,7 +109,7 @@ const NavBar = ({ user, handleLogout }) => {
           <button onClick={onLogout} className="btn-text logout-btn">
             Cerrar sesión
           </button>
-          <p className="footer-text">© 2024 Odontología</p>
+          <p className="footer-text">© 2026 Odontología</p>
         </div>
       </aside>
     </>
