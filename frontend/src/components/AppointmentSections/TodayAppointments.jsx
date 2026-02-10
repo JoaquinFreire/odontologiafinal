@@ -47,45 +47,63 @@ const TodayAppointments = ({
 
       {appointments.length > 0 ? (
         <div className="today-appointments-list">
-          {appointments.map(app => (
-            <div key={app.id} className="home-appointment-item today-item">
-              <div className="appointment-time">
-                <Clock size={16} />
-                <span>{new Date(app.datetime).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
-              </div>
-              <div className="appointment-details">
-                <div className="appointment-patient">
-                  <User size={14} />
-                  <h5>{formatAppointmentName(app)}</h5>
+          {appointments.map(app => {
+            const raw = app.datetime || app.date || '';
+            let datePart = '';
+            let timePart = '';
+            if (typeof raw === 'string') {
+              if (raw.includes('T')) {
+                const parts = raw.split('T');
+                datePart = parts[0];
+                timePart = (parts[1] || '').replace('Z', '').slice(0, 5);
+              } else if (raw.includes(' ')) {
+                const parts = raw.split(' ');
+                datePart = parts[0];
+                timePart = (parts[1] || '').slice(0, 5);
+              } else {
+                datePart = raw;
+              }
+            }
+            return (
+              <div key={app.id} className="home-appointment-item today-item">
+                <div className="appointment-time">
+                  <Clock size={16} />
+                  <span>{timePart}</span>
                 </div>
-                <p>{new Date(app.datetime).toLocaleDateString('es-ES')}</p>
+                <div className="appointment-details">
+                  <div className="appointment-patient">
+                    <User size={14} />
+                    <h5>{formatAppointmentName(app)}</h5>
+                  </div>
+                  <p>{datePart}</p>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+                  <button
+                    className="icon-button"
+                    onClick={() => onMarkAsCompleted(app.id)}
+                    disabled={markingComplete === app.id}
+                    title="Marcar como atendido"
+                  >
+                    <CheckCircle size={22} color={markingComplete === app.id ? '#ccc' : '#388e3c'} />
+                  </button>
+                  <button
+                    className="icon-button"
+                    onClick={() => onOpenRescheduleModal(app)}
+                    title="Reprogramar turno"
+                  >
+                    <Clock size={22} color="#0066cc" />
+                  </button>
+                  <button
+                    className="icon-button"
+                    onClick={() => onDeleteAppointment(app.id)}
+                    title="Eliminar turno"
+                  >
+                    <Trash2 size={22} color="#d32f2f" />
+                  </button>
+                </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-                <button
-                  className="icon-button"
-                  onClick={() => onMarkAsCompleted(app.id)}
-                  disabled={markingComplete === app.id}
-                  title="Marcar como atendido"
-                >
-                  <CheckCircle size={22} color={markingComplete === app.id ? '#ccc' : '#388e3c'} />
-                </button>
-                <button
-                  className="icon-button"
-                  onClick={() => onOpenRescheduleModal(app)}
-                  title="Reprogramar turno"
-                >
-                  <Clock size={22} color="#0066cc" />
-                </button>
-                <button
-                  className="icon-button"
-                  onClick={() => onDeleteAppointment(app.id)}
-                  title="Eliminar turno"
-                >
-                  <Trash2 size={22} color="#d32f2f" />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
             <div className="empty-state">

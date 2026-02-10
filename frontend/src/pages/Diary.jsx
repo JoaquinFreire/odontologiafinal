@@ -54,19 +54,29 @@ const Diary = ({ user, handleLogout }) => {
     try {
       const data = await appointmentService.getAllPendingAppointments(user.id);
       const map = new Map();
-      data.forEach(app => {
-        // Backend devuelve datetime en ISO format con Z: "2026-02-11T00:00:00Z"
-        const dt = new Date(app.datetime);
-          
-          // Formatear como YYYY-MM-DD usando la fecha UTC convertida a local
-          const year = dt.getFullYear();
-          const month = String(dt.getMonth() + 1).padStart(2, '0');
-          const day = String(dt.getDate()).padStart(2, '0');
-          const dateKey = `${year}-${month}-${day}`;
-          const timeKey = dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        data.forEach(app => {
+          // Usar la fecha/hora tal cual viene en la BD (sin conversión)
+          const raw = app.datetime || app.date || '';
+          let datePart = '';
+          let timePart = '';
+          if (typeof raw === 'string') {
+            if (raw.includes('T')) {
+              const parts = raw.split('T');
+              datePart = parts[0];
+              timePart = (parts[1] || '').replace('Z', '').slice(0, 5);
+            } else if (raw.includes(' ')) {
+              const parts = raw.split(' ');
+              datePart = parts[0];
+              timePart = (parts[1] || '').slice(0, 5);
+            } else {
+              datePart = raw;
+            }
+          }
+          const dateKey = datePart;
+          const timeKey = timePart;
           const key = `${dateKey}-${timeKey}`;
-        if (!map.has(key)) map.set(key, []);
-        map.get(key).push(app);
+          if (!map.has(key)) map.set(key, []);
+          map.get(key).push(app);
       });
       setAppointmentMap(map);
     } catch (err) { console.error(err); } finally { setLoading(false); }

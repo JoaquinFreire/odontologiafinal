@@ -1,15 +1,21 @@
 const pool = require('../config/database');
 
-// Convertir datetime de MySQL a ISO format con Z para que JavaScript lo interprete correctamente
+// Devolver el datetime tal cual viene de la base (sin añadir Z ni convertir)
+// El formato será la cadena almacenada en la BD, por ejemplo: "2026-02-11 08:00:00"
 const convertMySQLDateToISO = (datetimeStr) => {
   if (!datetimeStr) return null;
-  // Si es una cadena tipo "2026-02-11 09:00:00", convertir a ISO "2026-02-11T09:00:00Z"
   if (typeof datetimeStr === 'string') {
-    return datetimeStr.replace(' ', 'T') + 'Z';
+    return datetimeStr; // devolver sin modificaciones
   }
-  // Si ya es un Date object de MySQL, convertir a ISO
   if (datetimeStr instanceof Date) {
-    return datetimeStr.toISOString();
+    // Formatear usando los componentes locales del objeto Date (sin convertir a UTC)
+    const year = datetimeStr.getFullYear();
+    const month = String(datetimeStr.getMonth() + 1).padStart(2, '0');
+    const day = String(datetimeStr.getDate()).padStart(2, '0');
+    const hours = String(datetimeStr.getHours()).padStart(2, '0');
+    const mins = String(datetimeStr.getMinutes()).padStart(2, '0');
+    const secs = String(datetimeStr.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${mins}:${secs}`;
   }
   return datetimeStr;
 };
