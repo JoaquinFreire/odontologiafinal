@@ -202,9 +202,7 @@
     font-size: 14px;
   }
 }
-/* =====================================
-   FIX COLORES BOTONES TOOL
-   ===================================== */
+/* FIX COLORES BOTONES TOOL */
 
 /* Cuando NO está activo */
 .tool-btn-large.text-red {
@@ -237,6 +235,12 @@
 
 .tool-btn-large:disabled:hover {
   background-color: transparent !important;
+}
+
+/* Colores para íconos SVG dentro de botones */
+.tool-btn-large svg {
+  color: inherit;
+  stroke: currentColor;
 }
 
 /* =====================================
@@ -388,6 +392,9 @@
     font-size: 22px;
     font-weight: 700;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .tool-btn-large:hover {

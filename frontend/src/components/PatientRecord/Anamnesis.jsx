@@ -71,6 +71,11 @@ const Anamnesis = ({ anamnesisData, setAnamnesisData }) => {
     return value;
   };
 
+  // Normalizar booleanos desde BD (que podrían venir como strings o números)
+  const isBooleanTrue = (value) => {
+    return value === true || value === 1 || value === '1' || value === 'true' || value === 'TRUE';
+  };
+
   const setNestedValue = (path, value) => {
     const keys = path.split('.');
     const lastKey = keys.pop();
@@ -91,6 +96,7 @@ const Anamnesis = ({ anamnesisData, setAnamnesisData }) => {
 
   const renderYesNoGroup = (title, stateKey, description = null) => {
     const currentValue = getNestedValue(stateKey);
+    const isActive = isBooleanTrue(currentValue);
     
     return (
       <div className="yes-no-group">
@@ -98,13 +104,13 @@ const Anamnesis = ({ anamnesisData, setAnamnesisData }) => {
         {description && <p className="group-description">{description}</p>}
         <div className="yes-no-buttons">
           <button
-            className={`yes-no-btn ${currentValue === true ? 'active' : ''}`}
+            className={`yes-no-btn ${isActive === true ? 'active' : ''}`}
             onClick={() => setNestedValue(stateKey, true)}
           >
             SI
           </button>
           <button
-            className={`yes-no-btn ${currentValue === false ? 'active' : ''}`}
+            className={`yes-no-btn ${isActive === false ? 'active' : ''}`}
             onClick={() => setNestedValue(stateKey, false)}
           >
             NO
@@ -314,7 +320,7 @@ const Anamnesis = ({ anamnesisData, setAnamnesisData }) => {
                 <label key={disease} className="checkbox-label disease">
                   <input
                     type="checkbox"
-                    checked={anamnesisData.diseases[disease] || false}
+                    checked={isBooleanTrue(anamnesisData.diseases[disease])}
                     onChange={(e) => handleDiseaseChange(disease, e.target.checked)}
                   />
                   <span className="checkmark"></span>
@@ -329,7 +335,7 @@ const Anamnesis = ({ anamnesisData, setAnamnesisData }) => {
                 <label key={disease} className="checkbox-label disease">
                   <input
                     type="checkbox"
-                    checked={anamnesisData.diseases[disease] || false}
+                    checked={isBooleanTrue(anamnesisData.diseases[disease])}
                     onChange={(e) => handleDiseaseChange(disease, e.target.checked)}
                   />
                   <span className="checkmark"></span>
