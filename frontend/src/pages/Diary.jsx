@@ -55,15 +55,13 @@ const Diary = ({ user, handleLogout }) => {
       const data = await appointmentService.getAllPendingAppointments(user.id);
       const map = new Map();
       data.forEach(app => {
+        // Backend devuelve datetime en ISO format con Z: "2026-02-11T00:00:00Z"
         const dt = new Date(app.datetime);
-          // Convertir de UTC a zona horaria local para obtener la fecha LOCAL
-          const offset = dt.getTimezoneOffset() * 60000;
-          const localTime = new Date(dt.getTime() - offset);
-        
-          // Formatear como YYYY-MM-DD usando la fecha local (sin toISOString que convierte a UTC)
-          const year = localTime.getFullYear();
-          const month = String(localTime.getMonth() + 1).padStart(2, '0');
-          const day = String(localTime.getDate()).padStart(2, '0');
+          
+          // Formatear como YYYY-MM-DD usando la fecha UTC convertida a local
+          const year = dt.getFullYear();
+          const month = String(dt.getMonth() + 1).padStart(2, '0');
+          const day = String(dt.getDate()).padStart(2, '0');
           const dateKey = `${year}-${month}-${day}`;
           const timeKey = dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
           const key = `${dateKey}-${timeKey}`;
