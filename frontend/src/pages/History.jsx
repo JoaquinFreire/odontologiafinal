@@ -53,6 +53,11 @@ const toDateTimeLocal = (dateString) => {
   }
 };
 
+// Función para normalizar booleanos desde BD (que pueden venir como string, número o booleano)
+const normalizeBool = (value) => {
+  return value === true || value === 1 || value === '1' || value === 'true' || value === 'TRUE';
+};
+
 const History = ({ setIsAuthenticated, user, setUser }) => {
   const [activeTab, setActiveTab] = useState('datos');
   const [activeNav, setActiveNav] = useState('patients');
@@ -265,32 +270,38 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
             diseases = {};
           }
 
+          // Normalizar booleanos de enfermedades
+          const normalizedDiseases = {};
+          for (const [key, value] of Object.entries(diseases)) {
+            normalizedDiseases[key] = normalizeBool(value);
+          }
+
           setAnamnesisData({
             primaryDoctor: data.anamnesis.medico_cabecera || '',
             primaryDoctorPhone: data.anamnesis.medico_tel || '',
             primaryService: data.anamnesis['servicio cabecera'] || '',
             allergies: {
-              hasAllergies: data.anamnesis.alergico || false,
+              hasAllergies: normalizeBool(data.anamnesis.alergico),
               description: data.anamnesis.alergias_descripcion || ''
             },
             currentTreatment: {
-              underTreatment: data.anamnesis.tratamiento_medico || false,
+              underTreatment: normalizeBool(data.anamnesis.tratamiento_medico),
               description: ''
             },
             hospitalization: {
-              wasHospitalized: data.anamnesis.hospitalizado_ultimo_anio || false,
+              wasHospitalized: normalizeBool(data.anamnesis.hospitalizado_ultimo_anio),
               reason: data.anamnesis.hospitalizacion_motivo || ''
             },
-            healingProblems: data.anamnesis.problemas_cicatrizacion || false,
+            healingProblems: normalizeBool(data.anamnesis.problemas_cicatrizacion),
             bloodType: data.anamnesis.grupo_sanguineo || '',
             bloodRh: data.anamnesis.rh || '',
-            takesMedication: data.anamnesis.medicamento || false,
+            takesMedication: normalizeBool(data.anamnesis.medicamento),
             medication: data.anamnesis.medicamento_detalles || '',
-            isPregnant: data.anamnesis.embarazada || false,
+            isPregnant: normalizeBool(data.anamnesis.embarazada),
             pregnancyTime: data.anamnesis.tiempo_gestacional || '',
             obstetrician: data.anamnesis.obstetra || '',
             obstetricianPhone: data.anamnesis.obstetra_tel || '',
-            diseases,
+            diseases: normalizedDiseases,
             observations: data.anamnesis.observaciones || ''
           });
           setAnamnesisId(data.anamnesis.id);
@@ -356,32 +367,39 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
             } catch (e) {
               diseases = {};
             }
+            
+            // Normalizar booleanos en enfermedades
+            const normalizedDiseases = {};
+            for (const [key, value] of Object.entries(diseases)) {
+              normalizedDiseases[key] = normalizeBool(value);
+            }
+            
             return {
               primaryDoctor: data.anamnesis.medico_cabecera || '',
               primaryDoctorPhone: data.anamnesis.medico_tel || '',
               primaryService: data.anamnesis['servicio cabecera'] || '',
               allergies: {
-                hasAllergies: data.anamnesis.alergico || false,
+                hasAllergies: normalizeBool(data.anamnesis.alergico),
                 description: data.anamnesis.alergias_descripcion || ''
               },
               currentTreatment: {
-                underTreatment: data.anamnesis.tratamiento_medico || false,
+                underTreatment: normalizeBool(data.anamnesis.tratamiento_medico),
                 description: ''
               },
               hospitalization: {
-                wasHospitalized: data.anamnesis.hospitalizado_ultimo_anio || false,
+                wasHospitalized: normalizeBool(data.anamnesis.hospitalizado_ultimo_anio),
                 reason: data.anamnesis.hospitalizacion_motivo || ''
               },
-              healingProblems: data.anamnesis.problemas_cicatrizacion || false,
+              healingProblems: normalizeBool(data.anamnesis.problemas_cicatrizacion),
               bloodType: data.anamnesis.grupo_sanguineo || '',
               bloodRh: data.anamnesis.rh || '',
-              takesMedication: data.anamnesis.medicamento || false,
+              takesMedication: normalizeBool(data.anamnesis.medicamento),
               medication: data.anamnesis.medicamento_detalles || '',
-              isPregnant: data.anamnesis.embarazada || false,
+              isPregnant: normalizeBool(data.anamnesis.embarazada),
               pregnancyTime: data.anamnesis.tiempo_gestacional || '',
               obstetrician: data.anamnesis.obstetra || '',
               obstetricianPhone: data.anamnesis.obstetra_tel || '',
-              diseases,
+              diseases: normalizedDiseases,
               observations: data.anamnesis.observaciones || ''
             };
           })() : null,

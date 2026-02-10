@@ -119,7 +119,7 @@ export const appointmentService = {
 
       const data = await response.json();
       console.log('Turno creado:', data);
-      return data;
+      return { success: true, ...data };
     } catch (error) {
       console.error('=== ERROR EN createAppointment ===');
       console.error('Error completo:', error);

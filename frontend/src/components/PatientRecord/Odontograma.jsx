@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Pointer } from 'lucide-react';
 import '../../styles/Odontograma.css';
 
 const CONSTANTS = {
@@ -30,8 +31,9 @@ const ToolGroup = ({ title, tools, selectedTool, onSelect, disabled = false }) =
           className={`tool-btn-large ${selectedTool === t.id ? 'active' : ''} ${t.className || ''}`}
           onClick={() => onSelect(t.id)}
           disabled={disabled}
+          title={t.label}
         >
-          {t.label}
+          {t.icon ? t.icon : t.label}
         </button>
       ))}
     </div>
@@ -176,7 +178,7 @@ const Odontograma = ({ initialData, onDataChange, isReadOnly = false }) => {
       </button>
 
       <div className={`controls-panel ${showTools ? 'open' : ''}`}>
-        <ToolGroup title="Básico" tools={[{id: 'cursor', label: 'Cursor'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} disabled={isReadOnly} />
+        <ToolGroup title="Básico" tools={[{id: 'cursor', label: 'Cursor', icon: <Pointer size={22} />}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} disabled={isReadOnly} />
         <ToolGroup title="Caries/Obt." tools={[{id: 'face_red', label: '●', className: 'text-red'}, {id: 'face_blue', label: '●', className: 'text-blue'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} disabled={isReadOnly} />
         <ToolGroup title="Coronas" tools={[{id: 'crown_red', label: '○', className: 'text-red'}, {id: 'crown_blue', label: '○', className: 'text-blue'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} disabled={isReadOnly} />
         <ToolGroup title="Pieza Aus." tools={[{id: 'missing_red', label: 'X', className: 'text-red'}, {id: 'missing_blue', label: 'X', className: 'text-blue'}]} selectedTool={selectedTool} onSelect={(id) => {setSelectedTool(id); setInteractionStep(null);}} disabled={isReadOnly} />

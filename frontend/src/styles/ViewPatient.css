@@ -336,6 +336,12 @@
     cursor: pointer;
     font-size: 14px;
     padding: 5px;
+    transition: opacity 0.2s;
+}
+
+.cancel-link:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .confirm-agenda-btn {
@@ -351,6 +357,15 @@
 
 .confirm-agenda-btn:hover {
     background: #0052a3 !important;
+}
+
+.confirm-agenda-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.confirm-agenda-btn:disabled:hover {
+    background: #0066cc !important;
 }
 
 /* Select arrows fix */
@@ -472,18 +487,47 @@
     }
 }
 
-/* TOAST ÉXITO */
-.success-toast {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #10b981;
-    color: white;
-    padding: 12px 20px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    z-index: 4000;
+/* MODAL ÉXITO */
+.success-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+  backdrop-filter: blur(4px);
+}
+
+.success-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  text-align: center;
+  animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.success-card h3 {
+  margin: 1rem 0 0.5rem 0;
+  font-size: 1.25rem;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.success-card p {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }

@@ -56,7 +56,7 @@ const NewAppointmentModal = ({ showModal, setShowModal, selectedSlot, formData, 
                 disabled={loading}
               >
                 <option value="">Seleccionar...</option>
-                {Array.from({ length: (21 - 8 + 1) * 2 }, (_, i) => {
+                {Array.from({ length: 27 }, (_, i) => {
                   const hour = 8 + Math.floor(i / 2);
                   const minute = i % 2 === 0 ? '00' : '30';
                   const val = `${hour.toString().padStart(2, '0')}:${minute}`;
