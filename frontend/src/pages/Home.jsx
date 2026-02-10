@@ -185,9 +185,20 @@ const Home = ({ user, handleLogout }) => {
   };
   const handleOpenRescheduleModal = (app) => {
     if (!app) return;
-    const dt = new Date(app.datetime || app.date || Date.now());
-    const date = dt.toISOString().split('T')[0];
-    const time = dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const raw = app.datetime || app.date || '';
+    let date = '';
+    let time = '';
+    if (typeof raw === 'string') {
+      if (raw.includes('T')) {
+        const parts = raw.split('T');
+        date = parts[0];
+        time = (parts[1] || '').replace('Z', '').slice(0, 5);
+      } else if (raw.includes(' ')) {
+        const parts = raw.split(' ');
+        date = parts[0];
+        time = (parts[1] || '').slice(0, 5);
+      }
+    }
     setSelectedAppointmentToReschedule(app);
     setRescheduleForm({ date, time });
     setShowRescheduleModal(true);
