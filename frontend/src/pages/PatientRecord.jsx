@@ -271,11 +271,11 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
               <tbody>
                 {odontogramaData.treatments.map((treatment, index) => (
                   <tr key={index}>
-                    <td>{treatment.date || 'N/A'}</td>
-                    <td>{treatment.code || 'N/A'}</td>
-                    <td>{treatment.tooth_elements || 'N/A'}</td>
-                    <td>{treatment.faces || 'N/A'}</td>
-                    <td>{treatment.observations || 'N/A'}</td>
+                    <td>{treatment.date || 'Sin registrar'}</td>
+                    <td>{treatment.code || 'Sin registrar'}</td>
+                    <td>{treatment.tooth_elements || 'Sin registrar'}</td>
+                    <td>{treatment.faces || 'Sin registrar'}</td>
+                    <td>{treatment.observations || 'Sin registrar'}</td>
                   </tr>
                 ))}
                 <tr className="new-treatment-row">
