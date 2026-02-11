@@ -1,7 +1,7 @@
 const pool = require('../config/database');
 
-// Devolver el datetime en formato ISO con T (sin Z) para evitar confusiones de zona horaria
-// Si viene como Date object, convertlo a string sin perder la hora local guardada
+// Devolver el datetime en formato ISO con T sin conversión de zona horaria
+// Lee exactamente lo que está en la BD sin cambios
 const convertMySQLDateToISO = (datetimeStr) => {
   if (!datetimeStr) return null;
   
@@ -11,21 +11,14 @@ const convertMySQLDateToISO = (datetimeStr) => {
   }
   
   if (datetimeStr instanceof Date) {
-    // Si MySQL devuelve un Date object, convertirlo a ISO y restar 3 horas
-    // para compensar que MySQL en UTC interpreta nuestra hora local como UTC
-    const isoUTC = datetimeStr.toISOString(); // "2026-02-12T00:00:00.000Z"
-    const utcDate = new Date(isoUTC);
-    
-    // Restar 3 horas (Argentina UTC-3)
-    utcDate.setHours(utcDate.getHours() - 3);
-    
-    // Extraer componentes en UTC (ya compensado)
-    const year = utcDate.getUTCFullYear();
-    const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(utcDate.getUTCDate()).padStart(2, '0');
-    const hours = String(utcDate.getUTCHours()).padStart(2, '0');
-    const mins = String(utcDate.getUTCMinutes()).padStart(2, '0');
-    const secs = String(utcDate.getUTCSeconds()).padStart(2, '0');
+    // Si MySQL devuelve un Date object, convertirlo a string USANDO MÉTODOS LOCALES
+    // SIN conversión de zona horaria
+    const year = datetimeStr.getFullYear();
+    const month = String(datetimeStr.getMonth() + 1).padStart(2, '0');
+    const day = String(datetimeStr.getDate()).padStart(2, '0');
+    const hours = String(datetimeStr.getHours()).padStart(2, '0');
+    const mins = String(datetimeStr.getMinutes()).padStart(2, '0');
+    const secs = String(datetimeStr.getSeconds()).padStart(2, '0');
     
     return `${year}-${month}-${day}T${hours}:${mins}:${secs}`;
   }
