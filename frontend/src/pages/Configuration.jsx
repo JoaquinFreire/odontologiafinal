@@ -99,6 +99,8 @@ const Configuration = ({ setIsAuthenticated, user, setUser }) => {
         },
         body: JSON.stringify({
           email: formData.email,
+          name: formData.name,
+          lastname: formData.lastname,
           tuition: formData.tuition
         }),
       });
@@ -108,7 +110,7 @@ const Configuration = ({ setIsAuthenticated, user, setUser }) => {
       }
 
       setOriginalData(formData);
-      setUser(prev => ({ ...prev, email: formData.email, tuition: formData.tuition }));
+      setUser(prev => ({ ...prev, email: formData.email, name: formData.name, lastname: formData.lastname, tuition: formData.tuition }));
       setMessage('✓ Datos actualizados exitosamente');
       setMessageType('success');
     } catch (error) {
@@ -143,28 +145,28 @@ const Configuration = ({ setIsAuthenticated, user, setUser }) => {
             )}
 
             <form onSubmit={handleSubmit} className="form-grid">
-              {/* Nombre - Solo lectura */}
+              {/* Nombre - Editable */}
               <div className="form-group">
                 <label><UserIcon size={14} /> Nombre</label>
                 <input
                   type="text"
+                  name="name"
                   value={formData.name}
-                  readOnly
-                  className="readonly"
+                  onChange={handleChange}
+                  placeholder="Ingrese su nombre"
                 />
-                <small>Campo no modificable</small>
               </div>
 
-              {/* Apellido - Solo lectura */}
+              {/* Apellido - Editable */}
               <div className="form-group">
                 <label><UserIcon size={14} /> Apellido</label>
                 <input
                   type="text"
+                  name="lastname"
                   value={formData.lastname}
-                  readOnly
-                  className="readonly"
+                  onChange={handleChange}
+                  placeholder="Ingrese su apellido"
                 />
-                <small>Campo no modificable</small>
               </div>
 
               {/* Email - Editable */}
