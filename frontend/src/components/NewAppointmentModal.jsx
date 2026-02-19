@@ -40,8 +40,8 @@ const NewAppointmentModal = ({ showModal, setShowModal, selectedSlot, formData, 
               <label><strong>Fecha *</strong></label>
               <input 
                 type="date" 
-                min={new Date().toISOString().split('T')[0]} 
-                value={formData.date || selectedSlot.date || new Date().toISOString().split('T')[0]} 
+                min={`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`} 
+                value={formData.date || selectedSlot.date || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`} 
                 onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))} 
                 required
                 disabled={loading}

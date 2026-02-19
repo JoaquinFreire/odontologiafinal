@@ -13,7 +13,7 @@ const Configuration = ({ setIsAuthenticated, user, setUser }) => {
     name: '',
     lastname: '',
     tuition: ''
-  });
+  })
   const [loading, setLoading] = useState(false);
   const [originalData, setOriginalData] = useState(null);
   const [message, setMessage] = useState('');

@@ -88,8 +88,9 @@ const Diary = ({ user, handleLogout }) => {
       setShowEditModal(true);
       return;
     }
-    const dateStr = day.toISOString().split('T')[0];
-    if (dateStr < new Date().toISOString().split('T')[0]) return;
+    const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+    const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
+    if (dateStr < todayStr) return;
     setSelectedSlot({ date: dateStr, time: time });
     setFormData({ name: '', dni: '', type: '', other_treatment: '' });
     setShowModal(true);
