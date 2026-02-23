@@ -7,6 +7,7 @@ const authRoutes = require('./routes/auth.routes');
 const patientsRoutes = require('./routes/patients.routes');
 const appointmentsRoutes = require('./routes/appointments.routes');
 const treatmentBudgetsRoutes = require('./routes/treatment-budgets.routes');
+const treatmentsRoutes = require('./routes/treatments.routes');
 
 console.log('=== INICIANDO SERVIDOR ===');
 console.log('Variables de entorno:');
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientsRoutes);
 app.use('/api/appointments', appointmentsRoutes);
 app.use('/api/treatment-budgets', treatmentBudgetsRoutes);
+app.use('/api/config/treatments', treatmentsRoutes);
 
 // Ruta de prueba
 app.get('/api/health', (req, res) => {

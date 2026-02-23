@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
+import { getTreatments } from '../utils/treatmentsService';
 import {
   getTreatmentBudgets,
   getTreatmentBudget,
@@ -25,7 +26,9 @@ const PaymentSection = ({ patientId }) => {
   });
 
   const paymentMethods = ['Efectivo', 'Tarjeta de Crédito', 'Tarjeta de Débito', 'Transferencia', 'Cheque'];
-  const treatmentTypes = ['Limpieza', 'Extracción', 'Empaste', 'Endodoncia', 'Corona', 'Implante', 'Ortodoncia', 'Otro'];
+  const [treatmentTypes, setTreatmentTypes] = useState([]);
+
+  useEffect(() => { setTreatmentTypes(getTreatments()); }, []);
 
   useEffect(() => { loadBudgets(); }, [patientId]);
 

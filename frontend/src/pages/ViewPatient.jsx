@@ -1,15 +1,18 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 import React, { useState, useEffect } from 'react';
 import '../styles/ViewPatient.css';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import PaymentSection from '../components/PaymentSection';
+import { getTreatments } from '../utils/treatmentsService';
 import { getAllPatients, calculateAge } from '../services/patientService';
 import { appointmentService } from '../services/appointmentService';
 import { Eye, ClipboardList, Calendar, DollarSign, User, Search, Plus, CheckCircle } from 'lucide-react';
 
 const ViewPatient = ({ user }) => {
     const [patients, setPatients] = useState([]);
+    // eslint-disable-next-line no-unused-vars
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchInput, setSearchInput] = useState('');
@@ -268,11 +271,7 @@ const ViewPatient = ({ user }) => {
                                         <label>Tipo de Tratamiento *</label>
                                         <select name="type" value={appointmentFormData.type} onChange={handleAppointmentFormChange} required className="form-input" disabled={appointmentLoading}>
                                             <option value="">Seleccionar...</option>
-                                            <option value="Consulta General">Consulta General</option>
-                                            <option value="Ortodoncia">Ortodoncia</option>
-                                            <option value="Limpieza">Limpieza / Profilaxis</option>
-                                            <option value="Extracción">Extracción</option>
-                                            <option value="Otro">Otro</option>
+                                            {getTreatments().map(t => <option key={t} value={t}>{t}</option>)}
                                         </select>
                                     </div>
 

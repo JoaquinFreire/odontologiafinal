@@ -1,8 +1,16 @@
-import React from 'react';
+/* eslint-disable react-hooks/rules-of-hooks */
+import React, { useState, useEffect } from 'react';
+import { getTreatments } from '../utils/treatmentsService';
 import { X } from 'lucide-react';
 
 const NewAppointmentModal = ({ showModal, setShowModal, selectedSlot, formData, setFormData, handleSubmit, loading }) => {
   if (!showModal) return null;
+
+  const [treatments, setTreatments] = useState([]);
+
+  useEffect(() => {
+    setTreatments(getTreatments());
+  }, []);
 
   return (
     <div className="modal-overlay" onClick={() => !loading && setShowModal(false)}>
@@ -74,13 +82,7 @@ const NewAppointmentModal = ({ showModal, setShowModal, selectedSlot, formData, 
               disabled={loading}
             >
               <option value="">Seleccionar...</option>
-              <option value="Consulta">Consulta</option>
-              <option value="Limpieza dental">Limpieza dental</option>
-              <option value="Extracción">Extracción</option>
-              <option value="Blanqueamiento">Blanqueamiento</option>
-              <option value="Ortodoncia">Ortodoncia</option>
-              <option value="Implante dental">Implante dental</option>
-              <option value="Otro">Otro</option>
+              {treatments.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
 

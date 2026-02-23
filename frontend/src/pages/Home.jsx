@@ -11,6 +11,7 @@ import TodayAppointments from '../components/AppointmentSections/TodayAppointmen
 import PendingAppointments from '../components/AppointmentSections/PendingAppointments';
 import { appointmentService } from '../services/appointmentService';
 import { getAppointmentDateLocal } from '../utils/dateUtils';
+import { getTreatments } from '../utils/treatmentsService';
 
 // Lazy load modals para reducir bundle inicial
 const NewAppointmentModal = lazy(() => import('../components/NewAppointmentModal'));
@@ -57,6 +58,10 @@ const Home = ({ user, handleLogout }) => {
     payment_method: '',
     other_treatment: ''
   });
+
+  const [treatments, setTreatments] = useState([]);
+
+  useEffect(() => { setTreatments(getTreatments()); }, []);
 
   const navigate = useNavigate();
 
@@ -336,10 +341,7 @@ const Home = ({ user, handleLogout }) => {
                 <label>Tipo de Tratamiento *</label>
                 <select name="type" value={formData.type} onChange={handleFormChange} required disabled={loading}>
                   <option value="">Seleccionar...</option>
-                  <option value="Consulta">Consulta</option>
-                  <option value="Limpieza dental">Limpieza dental</option>
-                  <option value="Ortodoncia">Ortodoncia</option>
-                  <option value="Otro">Otro</option>
+                  {treatments.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
                 {formData.type === 'Otro' && (
                   <div className="form-group">

@@ -120,6 +120,80 @@ export const authService = {
     }
   },
 
+  // Decodificar JWT sin verificar firma
+  decodeToken: (token) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      console.error('Error decodificando token', e);
+      return null;
+    }
+  },
+
+  // Obtener tiempo hasta expiración en milisegundos
+  getTimeUntilExpiration: () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return 0;
+      const decoded = authService.decodeToken(token);
+      if (!decoded || !decoded.exp) return 0;
+      const now = Math.floor(Date.now() / 1000);
+      const secondsLeft = decoded.exp - now;
+      return Math.max(0, secondsLeft * 1000);
+    } catch (e) {
+      console.error('Error calculando expiración', e);
+      return 0;
+    }
+  },
+
+  // Verificar si el token está expirado
+  isExpired: () => {
+    return authService.getTimeUntilExpiration() <= 0;
+  },
+
+  // Verificar si falta menos de 1 minuto (60000 ms)
+  needsRefresh: () => {
+    const timeLeft = authService.getTimeUntilExpiration();
+    return timeLeft > 0 && timeLeft < 60000;
+  },
+
+  // Refrescar el token llamando al backend
+  refreshTokenRequest: async () => {
+    try {
+      console.log('=== REFRESCANDO TOKEN ===');
+      const token = localStorage.getItem('auth_token');
+      if (!token) throw new Error('No token found');
+
+      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Refresh failed');
+      }
+
+      const data = await response.json();
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
+        console.log('Token refrescado exitosamente');
+        return data.token;
+      }
+    } catch (error) {
+      console.error('Error refrescando token:', error);
+      // Si falla, limpiar sesión
+      authService.logout();
+      return null;
+    }
+  },
+
   // Limpiar sesión local
   clearSession: () => {
     try {
