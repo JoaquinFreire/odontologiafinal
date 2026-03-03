@@ -4,7 +4,7 @@
 // History.js - Historial Clínico del Paciente
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
-import { User, Briefcase, FileText, Clipboard, Save, ArrowLeft } from 'lucide-react';
+import { User, Briefcase, FileText, Clipboard, Save, ArrowLeft, Printer } from 'lucide-react';
 
 // Importar componentes
 import NavBar from '../components/NavBar';
@@ -18,6 +18,7 @@ import { getCompletePatientHistory, updatePatientData, updatePatientAnamnesis, u
 
 // Importar estilos
 import '../styles/PatientRecord.css';
+import '../styles/PrintHistory.css';
 
 // Función para formatear fechas (muestra fecha u fecha+hora según el valor guardado)
 const formatDate = (dateString) => {
@@ -193,6 +194,396 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
 
   // Rastrear qué sección mostró advertencia
   const [lastSectionWithWarning, setLastSectionWithWarning] = useState(null);
+
+  // Función para generar HTML de impresión completo
+  const generatePrintHTML = () => {
+    const diseaseLabels = {
+      diabetes: 'Diabetes',
+      hypertension: 'Hipertensión arterial',
+      rheumaticFever: 'Fiebre Reumática',
+      boneDiseases: 'Enfermedades de los huesos',
+      arthritis: 'Artritis - Artrosis',
+      muscleDiseases: 'Enfermedades musculares',
+      asthma: 'Asma',
+      respiratoryDiseases: 'Enfermedades respiratorias',
+      sinusitis: 'Sinusitis - Otitis - Anginas',
+      jointDiseases: 'Enfermedades articulares',
+      hepatitis: 'Hepatitis',
+      kidneyDiseases: 'Enfermedades renales',
+      liverDiseases: 'Enf. del hígado',
+      congenitalDiseases: 'Enfermedades congénitas',
+      chagas: 'Chagas',
+      headaches: 'Dolores de cabeza - Mareos',
+      epilepsy: 'Convulsiones - Epilepsia',
+      psychiatric: 'Enfermedades psiquiátricas',
+      unconsciousness: 'Pérdida de conocimiento',
+      heartDiseases: 'Enfermedades cardíacas',
+      consumesAlcohol: 'Consume alcohol',
+      bloodDiseases: 'Enfermedades de la sangre',
+      consumesTobacco: 'Consume Tabaco',
+      lymphDiseases: 'Enfermedades de ganglios',
+      surgeries: 'Intervenciones quirúrgicas',
+      skinDiseases: 'Enfermedades de la piel',
+      receivedTransfusions: 'Recibió transfusiones',
+      std: 'Enf. de transmisión sexual',
+      receivedDialysis: 'Recibió hemodiálisis',
+      chronicInfections: 'Infecciones crónicas',
+      operations: 'Operaciones',
+      glandularDiseases: 'Enfermedades glandulares'
+    };
+
+    const ageFromBirthDate = (birthDate) => {
+      try {
+        const date = new Date(birthDate);
+        const today = new Date();
+        let age = today.getFullYear() - date.getFullYear();
+        const monthDiff = today.getMonth() - date.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) age--;
+        return age;
+      } catch {
+        return 'N/A';
+      }
+    };
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Historial Clínico - ${patientData.name} ${patientData.lastname}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+          .print-document { padding: 40px 30px; font-size: 11pt; }
+          .print-header { text-align: center; border-bottom: 3px solid #1976d2; padding-bottom: 20px; margin-bottom: 30px; }
+          .print-header h1 { font-size: 24pt; color: #1976d2; margin: 10px 0; }
+          .print-clinic-title { font-size: 14pt; font-weight: 600; color: #333; }
+          .print-patient-info { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; background: #f5f5f5; padding: 15px; border-radius: 5px; }
+          .print-info-item { margin-bottom: 10px; }
+          .print-info-label { font-weight: 700; color: #1976d2; font-size: 10pt; text-transform: uppercase; }
+          .print-info-value { color: #333; margin-top: 3px; font-size: 11pt; }
+          .print-section { margin-bottom: 35px; page-break-inside: avoid; }
+          .print-section-title { font-size: 14pt; font-weight: 700; color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 8px; margin-bottom: 15px; margin-top: 20px; }
+          .print-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+          .print-field { padding: 10px; background: #fafafa; border-left: 3px solid #1976d2; }
+          .print-field-label { font-weight: 600; color: #1976d2; font-size: 9pt; text-transform: uppercase; margin-bottom: 3px; }
+          .print-field-value { color: #333; font-size: 10pt; word-break: break-word; }
+          .print-full-width { grid-column: 1 / -1; }
+          .print-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+          .print-table thead { background: #1976d2; color: white; }
+          .print-table th { padding: 10px 8px; text-align: left; font-weight: 700; font-size: 9pt; border: 1px solid #bbb; }
+          .print-table td { padding: 8px; border: 1px solid #ddd; font-size: 9pt; }
+          .print-table tbody tr:nth-child(even) { background: #f9f9f9; }
+          .print-yes-no { display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 9pt; font-weight: 600; }
+          .print-yes-no.true { background: #4caf50; color: white; }
+          .print-yes-no.false { background: #ccc; color: #666; }
+          .print-text-content { background: #f9f9f9; padding: 12px; border-left: 3px solid #1976d2; margin: 10px 0; white-space: pre-wrap; word-wrap: break-word; font-size: 10pt; line-height: 1.5; }
+          .print-empty { color: #999; font-style: italic; }
+          .print-diseases-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+          .print-disease-item { padding: 5px 8px; background: #f0f0f0; border-left: 2px solid #1976d2; font-size: 9pt; }
+          .print-disease-item.checked { background: #e8f5e9; border-left-color: #4caf50; font-weight: 600; color: #2e7d32; }
+          .print-date { font-size: 10pt; color: #666; text-align: right; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 10px; }
+          .print-page-break { page-break-after: always; }
+          @page { margin: 0.5in; size: letter; }
+        </style>
+      </head>
+      <body>
+        <div class="print-document">
+          <!-- Header -->
+          <div class="print-header">
+            <div class="print-clinic-title">Clínica Odontológica</div>
+            <h1>HISTORIAL CLÍNICO</h1>
+          </div>
+
+          <!-- Información del Paciente -->
+          <div class="print-section">
+            <div class="print-patient-info">
+              <div class="print-info-item">
+                <div class="print-info-label">Nombre</div>
+                <div class="print-info-value">${patientData.name} ${patientData.lastname}</div>
+              </div>
+              <div class="print-info-item">
+                <div class="print-info-label">DNI</div>
+                <div class="print-info-value">${patientData.dni || 'No registrado'}</div>
+              </div>
+              <div class="print-info-item">
+                <div class="print-info-label">Edad</div>
+                <div class="print-info-value">${ageFromBirthDate(patientData.birthDate)} años</div>
+              </div>
+              <div class="print-info-item">
+                <div class="print-info-label">Fecha de Nacimiento</div>
+                <div class="print-info-value">${formatDate(patientData.birthDate)}</div>
+              </div>
+              <div class="print-info-item">
+                <div class="print-info-label">Teléfono</div>
+                <div class="print-info-value">${patientData.phone || 'No registrado'}</div>
+              </div>
+              <div class="print-info-item">
+                <div class="print-info-label">Email</div>
+                <div class="print-info-value">${patientData.email || 'No registrado'}</div>
+              </div>
+              <div class="print-info-item">
+                <div class="print-info-label">Dirección</div>
+                <div class="print-info-value">${patientData.address || 'No registrado'}</div>
+              </div>
+              <div class="print-info-item">
+                <div class="print-info-label">Ocupación</div>
+                <div class="print-info-value">${patientData.occupation || 'No registrado'}</div>
+              </div>
+              <div class="print-info-item">
+                <div class="print-info-label">Nº Afiliado</div>
+                <div class="print-info-value">${patientData.healthInsurance?.number || 'No registrado'}</div>
+              </div>
+              <div class="print-info-item">
+                <div class="print-info-label">Titular</div>
+                <div class="print-info-value">${patientData.healthInsurance?.isHolder ? 'Sí' : 'No'}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Datos Personales -->
+          <div class="print-section">
+            <div class="print-section-title">DATOS PERSONALES</div>
+            <div class="print-grid">
+              <div class="print-field">
+                <div class="print-field-label">Teléfono</div>
+                <div class="print-field-value">${patientData.phone || 'No registrado'}</div>
+              </div>
+              <div class="print-field">
+                <div class="print-field-label">Email</div>
+                <div class="print-field-value">${patientData.email || 'No registrado'}</div>
+              </div>
+              <div class="print-field">
+                <div class="print-field-label">Dirección</div>
+                <div class="print-field-value">${patientData.address || 'No registrado'}</div>
+              </div>
+              <div class="print-field">
+                <div class="print-field-label">Ocupación</div>
+                <div class="print-field-value">${patientData.occupation || 'No registrado'}</div>
+              </div>
+              <div class="print-field print-full-width">
+                <div class="print-field-label">Observaciones Dentales</div>
+                <div class="print-field-value">${patientData.dentalObservations || 'No hay observaciones'}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Anamnesis -->
+          <div class="print-section">
+            <div class="print-section-title">ANAMNESIS</div>
+            
+            <div class="print-grid">
+              <div class="print-field">
+                <div class="print-field-label">Médico de Cabecera</div>
+                <div class="print-field-value">${anamnesisData.primaryDoctor || 'No registrado'}</div>
+              </div>
+              <div class="print-field">
+                <div class="print-field-label">Teléfono del Médico</div>
+                <div class="print-field-value">${anamnesisData.primaryDoctorPhone || 'No registrado'}</div>
+              </div>
+              <div class="print-field print-full-width">
+                <div class="print-field-label">Servicio de Cabecera</div>
+                <div class="print-field-value">${anamnesisData.primaryService || 'No registrado'}</div>
+              </div>
+            </div>
+
+            <div style="margin-top: 15px;">
+              <div class="print-field-label" style="margin-bottom: 10px;">Alergias</div>
+              <div class="print-grid">
+                <div class="print-field">
+                  <div class="print-field-label">¿Alérgico?</div>
+                  <span class="print-yes-no ${anamnesisData.allergies?.hasAllergies ? 'true' : 'false'}">
+                    ${anamnesisData.allergies?.hasAllergies ? 'SÍ' : 'NO'}
+                  </span>
+                </div>
+                <div class="print-field">
+                  <div class="print-field-label">Descripción</div>
+                  <div class="print-field-value">${anamnesisData.allergies?.description || 'No especificado'}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 15px;">
+              <div class="print-field-label" style="margin-bottom: 10px;">Tratamiento Médico Actual</div>
+              <div class="print-grid">
+                <div class="print-field">
+                  <div class="print-field-label">¿En tratamiento?</div>
+                  <span class="print-yes-no ${anamnesisData.currentTreatment?.underTreatment ? 'true' : 'false'}">
+                    ${anamnesisData.currentTreatment?.underTreatment ? 'SÍ' : 'NO'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 15px;">
+              <div class="print-field-label" style="margin-bottom: 10px;">Hospitalización en el Último Año</div>
+              <div class="print-grid">
+                <div class="print-field">
+                  <div class="print-field-label">¿Hospitalizado?</div>
+                  <span class="print-yes-no ${anamnesisData.hospitalization?.wasHospitalized ? 'true' : 'false'}">
+                    ${anamnesisData.hospitalization?.wasHospitalized ? 'SÍ' : 'NO'}
+                  </span>
+                </div>
+                <div class="print-field">
+                  <div class="print-field-label">Motivo</div>
+                  <div class="print-field-value">${anamnesisData.hospitalization?.reason || 'No especificado'}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 15px;">
+              <div class="print-field-label" style="margin-bottom: 10px;">Datos de Sangre</div>
+              <div class="print-grid">
+                <div class="print-field">
+                  <div class="print-field-label">Grupo Sanguíneo</div>
+                  <div class="print-field-value">${anamnesisData.bloodType || 'No registrado'}</div>
+                </div>
+                <div class="print-field">
+                  <div class="print-field-label">RH</div>
+                  <div class="print-field-value">${anamnesisData.bloodRh || 'No registrado'}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 15px;">
+              <div class="print-field-label" style="margin-bottom: 10px;">Medicamentos</div>
+              <div class="print-grid">
+                <div class="print-field">
+                  <div class="print-field-label">¿Toma medicamentos?</div>
+                  <span class="print-yes-no ${anamnesisData.takesMedication ? 'true' : 'false'}">
+                    ${anamnesisData.takesMedication ? 'SÍ' : 'NO'}
+                  </span>
+                </div>
+                <div class="print-field print-full-width">
+                  <div class="print-field-label">Detalles</div>
+                  <div class="print-field-value">${anamnesisData.medication || 'No especificado'}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 15px;">
+              <div class="print-field-label" style="margin-bottom: 10px;">Embarazo</div>
+              <div class="print-grid">
+                <div class="print-field">
+                  <div class="print-field-label">¿Embarazada?</div>
+                  <span class="print-yes-no ${anamnesisData.isPregnant ? 'true' : 'false'}">
+                    ${anamnesisData.isPregnant ? 'SÍ' : 'NO'}
+                  </span>
+                </div>
+                <div class="print-field">
+                  <div class="print-field-label">Tiempo Gestacional</div>
+                  <div class="print-field-value">${anamnesisData.pregnancyTime || 'N/A'}</div>
+                </div>
+                <div class="print-field">
+                  <div class="print-field-label">Obstetra</div>
+                  <div class="print-field-value">${anamnesisData.obstetrician || 'No registrado'}</div>
+                </div>
+                <div class="print-field">
+                  <div class="print-field-label">Teléfono Obstetra</div>
+                  <div class="print-field-value">${anamnesisData.obstetricianPhone || 'No registrado'}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+              <div class="print-field-label" style="margin-bottom: 10px;">Antecedentes Médicos</div>
+              <div class="print-diseases-grid">
+                ${Object.entries(anamnesisData.diseases || {}).map(([key, value]) => `
+                  <div class="print-disease-item ${value ? 'checked' : ''}">
+                    ${value ? '✓' : '○'} ${diseaseLabels[key] || key}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div style="margin-top: 15px;">
+              <div class="print-field-label" style="margin-bottom: 10px;">Observaciones Médicas</div>
+              <div class="print-text-content">${anamnesisData.observations || 'No hay observaciones'}</div>
+            </div>
+          </div>
+
+          <!-- Tratamientos -->
+          ${odontogramaData.treatments && odontogramaData.treatments.length > 0 ? `
+            <div class="print-section">
+              <div class="print-section-title">TRATAMIENTOS REALIZADOS</div>
+              <table class="print-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Código</th>
+                    <th>Dientes</th>
+                    <th>Caras</th>
+                    <th>Observaciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${odontogramaData.treatments.map(t => `
+                    <tr>
+                      <td>${formatDate(t.date)}</td>
+                      <td>${t.code || '-'}</td>
+                      <td>${t.tooth_elements || '-'}</td>
+                      <td>${t.faces || '-'}</td>
+                      <td>${t.observations || '-'}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
+
+          <!-- Consentimiento Informado -->
+          <div class="print-section">
+            <div class="print-section-title">ACTA DE CONSENTIMIENTO INFORMADO</div>
+            <div class="print-text-content" style="margin-top: 15px;">
+              ${consentData.text || 'No hay consentimiento registrado'}
+            </div>
+            <div class="print-grid" style="margin-top: 20px;">
+              <div class="print-field">
+                <div class="print-field-label">Fecha y Hora</div>
+                <div class="print-field-value">${formatDate(consentData.datetime)}</div>
+              </div>
+              <div class="print-field">
+                <div class="print-field-label">Aceptado</div>
+                <span class="print-yes-no ${consentData.accepted ? 'true' : 'false'}">
+                  ${consentData.accepted ? 'SÍ' : 'NO'}
+                </span>
+              </div>
+              <div class="print-field">
+                <div class="print-field-label">Odontólogo</div>
+                <div class="print-field-value">${consentData.doctorName || 'No registrado'}</div>
+              </div>
+              <div class="print-field">
+                <div class="print-field-label">Matrícula</div>
+                <div class="print-field-value">${consentData.doctorMatricula || 'No registrado'}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fecha de Impresión -->
+          <div class="print-date">
+            Documento generado el ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return html;
+  };
+
+  // Función para imprimir
+  const handlePrint = () => {
+    const printHTML = generatePrintHTML();
+    const printWindow = window.open('', 'PRINT', 'height=600,width=800');
+    printWindow.document.write(printHTML);
+    printWindow.document.close();
+    setTimeout(() => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    }, 250);
+  };
 
   const tabs = [
     { id: 'datos', label: 'Datos Personales', icon: <User size={20} /> },
@@ -951,6 +1342,14 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
               </div>
             </div>
             <div className="header-actions">
+              <button
+                className="btn-primary"
+                onClick={handlePrint}
+                title="Imprimir historial clínico completo"
+              >
+                <Printer size={16} />
+                <span>Imprimir</span>
+              </button>
               <button
                 className="btn-primary"
                 onClick={handleSaveAll}

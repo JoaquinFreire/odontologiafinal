@@ -320,10 +320,6 @@ const PatientRecord = ({ setIsAuthenticated, user, setUser }) => {
               </div>
             </div>
             <div className="header-actions">
-              <button className="btn-outline">
-                <Printer size={18} />
-                <span>Imprimir Ficha</span>
-              </button>
               <button className="btn-primary" onClick={handleSaveAll} disabled={loading}>
                 <Save size={18} />
                 <span>{loading ? 'Guardando...' : 'Guardar Todo'}</span>

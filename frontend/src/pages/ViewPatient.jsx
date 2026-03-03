@@ -217,10 +217,10 @@ const ViewPatient = ({ user }) => {
                                         <div className="info-item"><span className="info-label">DNI</span><span className="info-value">{selectedPatient.dni}</span></div>
                                         <div className="info-item"><span className="info-label">Fecha de Nacimiento</span><span className="info-value">{formatDate(selectedPatient.birthdate)}</span></div>
                                         <div className="info-item"><span className="info-label">Edad</span><span className="info-value">{calculateAge(selectedPatient.birthdate)} años</span></div>
-                                        <div className="info-item"><span className="info-label">Profesión</span><span className="info-value">{selectedPatient.occupation || 'N/A'}</span></div>
-                                        <div className="info-item"><span className="info-label">Teléfono</span><span className="info-value">{selectedPatient.phone || 'N/A'}</span></div>
-                                        <div className="info-item"><span className="info-label">Email</span><span className="info-value">{selectedPatient.email || 'N/A'}</span></div>
-                                        <div className="info-item"><span className="info-label">Dirección</span><span className="info-value">{selectedPatient.address || 'N/A'}</span></div>
+                                        <div className="info-item"><span className="info-label">Profesión</span><span className="info-value">{selectedPatient.occupation || 'No registrado'}</span></div>
+                                        <div className="info-item"><span className="info-label">Teléfono</span><span className="info-value">{selectedPatient.phone || 'No registrado'}</span></div>
+                                        <div className="info-item"><span className="info-label">Email</span><span className="info-value">{selectedPatient.email || 'No registrado'}</span></div>
+                                        <div className="info-item"><span className="info-label">Dirección</span><span className="info-value">{selectedPatient.address || 'No registrado'}</span></div>
                                         <div className="info-item"><span className="info-label">Titular</span><span className="info-value">{selectedPatient.is_holder ? 'Sí' : 'No'}</span></div>
                                         <div className="info-item full-width"><span className="info-label">Observaciones</span><span className="info-value">{selectedPatient.notes || '—'}</span></div>
                                     </div>

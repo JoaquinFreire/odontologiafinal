@@ -1,0 +1,246 @@
+/* Estilos para impresión del historial clínico */
+@media print {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body, html {
+    background: white;
+    color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  /* Ocultar elementos que no queremos imprimir */
+  .navbar, .sidebar, nav, .record-tabs, .section-header, .header-actions, .btn-primary, .btn-secondary, .unsaved-changes-indicator, .message-alert {
+    display: none !important;
+  }
+
+  .main-content {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .patient-record {
+    padding: 0 !important;
+  }
+
+  /* Estilos del documento impreso */
+  .print-document {
+    width: 100%;
+    padding: 40px 30px;
+    font-size: 11pt;
+    line-height: 1.6;
+  }
+
+  .print-header {
+    text-align: center;
+    border-bottom: 3px solid #1976d2;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+  }
+
+  .print-header h1 {
+    font-size: 24pt;
+    color: #1976d2;
+    margin: 10px 0;
+  }
+
+  .print-clinic-title {
+    font-size: 14pt;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .print-patient-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 5px;
+  }
+
+  .print-info-item {
+    margin-bottom: 10px;
+  }
+
+  .print-info-label {
+    font-weight: 700;
+    color: #1976d2;
+    font-size: 10pt;
+    text-transform: uppercase;
+  }
+
+  .print-info-value {
+    color: #333;
+    margin-top: 3px;
+    font-size: 11pt;
+  }
+
+  .print-section {
+    margin-bottom: 35px;
+    page-break-inside: avoid;
+  }
+
+  .print-section-title {
+    font-size: 14pt;
+    font-weight: 700;
+    color: #1976d2;
+    border-bottom: 2px solid #1976d2;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+    margin-top: 20px;
+  }
+
+  .print-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+
+  .print-field {
+    padding: 10px;
+    background-color: #fafafa;
+    border-left: 3px solid #1976d2;
+  }
+
+  .print-field-label {
+    font-weight: 600;
+    color: #1976d2;
+    font-size: 9pt;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  .print-field-value {
+    color: #333;
+    font-size: 10pt;
+    word-break: break-word;
+  }
+
+  .print-full-width {
+    grid-column: 1 / -1;
+  }
+
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+  }
+
+  .print-table thead {
+    background-color: #1976d2;
+    color: white;
+  }
+
+  .print-table th {
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 9pt;
+    border: 1px solid #bbb;
+  }
+
+  .print-table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    font-size: 9pt;
+  }
+
+  .print-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  .print-table tbody tr:hover {
+    background-color: transparent;
+  }
+
+  .print-yes-no {
+    display: inline-block;
+    background-color: #ddd;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 9pt;
+    font-weight: 600;
+  }
+
+  .print-yes-no.true {
+    background-color: #4caf50;
+    color: white;
+  }
+
+  .print-yes-no.false {
+    background-color: #ccc;
+    color: #666;
+  }
+
+  .print-text-content {
+    background-color: #f9f9f9;
+    padding: 12px;
+    border-left: 3px solid #1976d2;
+    margin: 10px 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+    line-height: 1.5;
+    color: #333;
+  }
+
+  .print-empty {
+    color: #999;
+    font-style: italic;
+  }
+
+  .print-diseases-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .print-disease-item {
+    padding: 5px 8px;
+    background-color: #f0f0f0;
+    border-left: 2px solid #1976d2;
+    font-size: 9pt;
+  }
+
+  .print-disease-item.checked {
+    background-color: #e8f5e9;
+    border-left-color: #4caf50;
+    font-weight: 600;
+    color: #2e7d32;
+  }
+
+  .print-date {
+    font-size: 10pt;
+    color: #666;
+    text-align: right;
+    margin-top: 30px;
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+  }
+
+  .print-page-break {
+    page-break-after: always;
+  }
+
+  /* Asegurar que el contenido se vea bien al imprimir */
+  @page {
+    margin: 0.5in;
+    size: letter;
+  }
+
+  a {
+    color: #1976d2;
+    text-decoration: none;
+  }
+
+  /* Ocultar el iframe usado para la impresión */
+  .print-iframe {
+    display: none;
+  }
+}
