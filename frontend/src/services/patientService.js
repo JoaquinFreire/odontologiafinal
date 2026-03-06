@@ -169,10 +169,13 @@ export const getAllPatients = async (page = 1, pageSize = 10, searchTerm = '', s
       throw new Error(errorData.error || 'Error obteniendo pacientes');
     }
 
-    const data = await response.json();
+    let data = await response.json();
+    // normalizar teléfono en los pacientes retornados
+    if (data.success && Array.isArray(data.data)) {
+      data.data = data.data.map(p => ({ ...p, phone: p.phone || p.tel || '' }));
+    }
     return data;
-  } catch (error) {
-    console.error('Error al obtener pacientes:', error);
+  } catch (error) {    console.error('Error al obtener pacientes:', error);
     return { success: false, error: error.message };
   }
 };

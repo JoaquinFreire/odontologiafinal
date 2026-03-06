@@ -54,12 +54,7 @@ const LoginForm = ({ setIsAuthenticated, setUser }) => {
     try {
       const result = await authService.login(usuario, contrasena);
       if (result) {
-        setUser({
-          id: result.id,
-          email: result.email,
-          name: result.name || '',
-          lastname: result.lastname || ''
-        });
+        setUser(result);
         setIsAuthenticated(true);
         navigate('/', { replace: true });
       }

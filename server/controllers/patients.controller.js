@@ -27,6 +27,15 @@ const getAllPatients = async (req, res) => {
     // Obtener pacientes paginados
     const [patients] = await pool.query(patientsQuery);
 
+    // Formatear fechas y normalizar teléfono
+    patients.forEach(patient => {
+      if (patient.birthdate) {
+        patient.birthdate = patient.birthdate.toISOString().split('T')[0];
+      }
+      // asegurarse de que siempre haya campo "phone" para el frontend
+      patient.phone = patient.tel || '';
+    });
+
     const totalPages = Math.ceil(totalPatients / pageSize);
 
     res.json({
@@ -60,7 +69,13 @@ const getPatient = async (req, res) => {
       return res.status(404).json({ success: false, error: 'Paciente no encontrado' });
     }
 
-    res.json({ success: true, data: patients[0] });
+    const patient = patients[0];
+    if (patient.birthdate) {
+      patient.birthdate = patient.birthdate.toISOString().split('T')[0];
+    }
+    patient.phone = patient.tel || '';
+
+    res.json({ success: true, data: patient });
   } catch (error) {
     console.error('Error obteniendo paciente:', error);
     res.status(500).json({ success: false, error: 'Error interno del servidor' });

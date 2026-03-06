@@ -632,7 +632,7 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
           lastname: data.patient.lastname,
           dni: data.patient.dni,
           birthDate: data.patient.birthdate,
-          phone: data.patient.tel,
+          phone: data.patient.phone || data.patient.tel || '',
           email: data.patient.email,
           address: data.patient.address,
           occupation: data.patient.occupation,
@@ -741,6 +741,7 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
         setOriginalData({
           patient: {
             tel: data.patient.tel,
+            phone: data.patient.phone || data.patient.tel || '',
             email: data.patient.email,
             address: data.patient.address,
             occupation: data.patient.occupation,
@@ -847,15 +848,26 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
     const checkForChanges = () => {
       if (!originalData.patient) return false;
 
-      // Comparar datos del paciente
-      const patientChanged = JSON.stringify({
-        tel: patientData.phone,
+      // Comparar datos del paciente (usar "phone" como campo canónico)
+      const normalizedOriginal = {
+        phone: originalData.patient.phone || originalData.patient.tel || '',
+        email: originalData.patient.email,
+        address: originalData.patient.address,
+        occupation: originalData.patient.occupation,
+        affiliate_number: originalData.patient.affiliate_number || '',
+        holder: originalData.patient.holder || false
+      };
+
+      const normalizedCurrent = {
+        phone: patientData.phone || '',
         email: patientData.email,
         address: patientData.address,
         occupation: patientData.occupation,
         affiliate_number: patientData.healthInsurance?.number || '',
         holder: patientData.healthInsurance?.isHolder || false
-      }) !== JSON.stringify(originalData.patient);
+      };
+
+      const patientChanged = JSON.stringify(normalizedCurrent) !== JSON.stringify(normalizedOriginal);
 
       // Comparar anamnesis
       const anamnesisChanged = originalData.anamnesis ?
@@ -994,7 +1006,15 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
 
       // Actualizar datos originales
       setOriginalData({
-        patient: { tel: patientData.phone, email: patientData.email, address: patientData.address, occupation: patientData.occupation, affiliate_number: patientData.healthInsurance?.number || '', holder: patientData.healthInsurance?.isHolder || false },
+        patient: { 
+          tel: patientData.phone, 
+          phone: patientData.phone, 
+          email: patientData.email, 
+          address: patientData.address, 
+          occupation: patientData.occupation, 
+          affiliate_number: patientData.healthInsurance?.number || '', 
+          holder: patientData.healthInsurance?.isHolder || false 
+        },
         anamnesis: { ...anamnesisData },
         odontograma: { ...odontogramaData, version: odontogramaVersion },
         consent: { ...consentData }
@@ -1022,7 +1042,18 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
           if (!patientUpdate.success) {
             throw new Error('Error al actualizar datos del paciente: ' + patientUpdate.error);
           }
-          setOriginalData(prev => ({ ...prev, patient: { tel: patientData.phone, email: patientData.email, address: patientData.address, occupation: patientData.occupation, affiliate_number: patientData.healthInsurance?.number || '', holder: patientData.healthInsurance?.isHolder || false } }));
+          setOriginalData(prev => ({
+            ...prev,
+            patient: {
+              tel: patientData.phone,
+              phone: patientData.phone,
+              email: patientData.email,
+              address: patientData.address,
+              occupation: patientData.occupation,
+              affiliate_number: patientData.healthInsurance?.number || '',
+              holder: patientData.healthInsurance?.isHolder || false
+            }
+          }));
           setHasUnsavedChanges(false);
           break;
 
