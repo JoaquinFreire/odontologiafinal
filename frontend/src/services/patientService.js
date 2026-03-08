@@ -1,9 +1,9 @@
-/* eslint-disable no-unused-vars */
+﻿/* eslint-disable no-unused-vars */
 import { formatPatientDataForDB } from '../validators/formValidators';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-// Función helper para obtener headers con token
+// FunciÃ³n helper para obtener headers con token
 const getAuthHeaders = () => {
   const token = localStorage.getItem('auth_token');
   return {
@@ -150,7 +150,7 @@ export const updatePatientAnamnesis = async (patientId, anamnesisData, userId, a
   }
 };
 
-// Obtener todos los pacientes del usuario actual CON PAGINACIÓN
+// Obtener todos los pacientes del usuario actual CON PAGINACIÃ“N
 export const getAllPatients = async (page = 1, pageSize = 10, searchTerm = '', signal) => {
   try {
     const url = new URL(`${API_BASE_URL}/patients`);
@@ -170,7 +170,7 @@ export const getAllPatients = async (page = 1, pageSize = 10, searchTerm = '', s
     }
 
     let data = await response.json();
-    // normalizar teléfono en los pacientes retornados
+    // normalizar telÃ©fono en los pacientes retornados
     if (data.success && Array.isArray(data.data)) {
       data.data = data.data.map(p => ({ ...p, phone: p.phone || p.tel || '' }));
     }
@@ -180,7 +180,7 @@ export const getAllPatients = async (page = 1, pageSize = 10, searchTerm = '', s
   }
 };
 
-// Función auxiliar para calcular edad
+// FunciÃ³n auxiliar para calcular edad
 export const calculateAge = (birthdate) => {
   if (!birthdate) return null;
   const today = new Date();
@@ -193,7 +193,7 @@ export const calculateAge = (birthdate) => {
   return age;
 };
 
-// Obtener odontograma de un paciente (última versión)
+// Obtener odontograma de un paciente (Ãºltima versiÃ³n)
 export const getPatientOdontograma = async (patientId) => {
   try {
     const response = await fetch(`${API_BASE_URL}/patients/${patientId}/odontograma`, {
@@ -256,6 +256,69 @@ export const getPatientTreatments = async (patientId) => {
   }
 };
 
+// Obtener radiografias de un paciente
+export const getPatientRadiografias = async (patientId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/patients/${patientId}/radiografias`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error obteniendo radiografias');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error al obtener radiografias:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Crear radiografia de un paciente
+export const createPatientRadiografia = async (patientId, radiografiaData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/patients/${patientId}/radiografias`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(radiografiaData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error creando radiografia');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error al crear radiografia:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Eliminar radiografia de un paciente
+export const deletePatientRadiografia = async (patientId, radiografiaId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/patients/${patientId}/radiografias/${radiografiaId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error eliminando radiografia');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error al eliminar radiografia:', error);
+    return { success: false, error: error.message };
+  }
+};
 // Obtener historial clínico completo de un paciente
 export const getCompletePatientHistory = async (patientId, userId) => {
   try {
@@ -283,7 +346,7 @@ export const getCompletePatientHistory = async (patientId, userId) => {
   }
 };
 
-// Obtener odontograma por versión
+// Obtener odontograma por versiÃ³n
 export const getOdontogramaByVersion = async (patientId, version, userId) => {
   try {
     const response = await fetch(`${API_BASE_URL}/patients/${patientId}/odontograma/${version}`, {
@@ -293,13 +356,13 @@ export const getOdontogramaByVersion = async (patientId, version, userId) => {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || 'Error obteniendo odontograma por versión');
+      throw new Error(errorData.error || 'Error obteniendo odontograma por versiÃ³n');
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error al obtener odontograma por versión:', error);
+    console.error('Error al obtener odontograma por versiÃ³n:', error);
     return { success: false, error: error.message };
   }
 };
@@ -307,7 +370,7 @@ export const getOdontogramaByVersion = async (patientId, version, userId) => {
 // Actualizar datos del paciente (solo campos editables)
 export const updatePatientData = async (patientId, data) => {
   try {
-    // Formatear nombre y apellido, y normalizar teléfono y email
+    // Formatear nombre y apellido, y normalizar telÃ©fono y email
     const formattedData = formatPatientDataForDB(data);
 
     const response = await fetch(`${API_BASE_URL}/patients/${patientId}`, {
@@ -357,7 +420,7 @@ export const updateOdontograma = async (patientId, odontogramaData, userId, save
 
     const result = await response.json();
 
-    // Si saveTreatments es true, actualizar tratamientos también
+    // Si saveTreatments es true, actualizar tratamientos tambiÃ©n
     if (saveTreatments && odontogramaData.treatments) {
       await updateTreatments(patientId, odontogramaData.treatments);
     }
@@ -434,3 +497,6 @@ export const getOdontogramaVersions = async (patientId, userId) => {
     return { success: false, error: error.message };
   }
 };
+
+
+

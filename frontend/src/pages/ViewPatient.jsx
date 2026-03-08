@@ -6,9 +6,11 @@ import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import PaymentSection from '../components/PaymentSection';
 import { getTreatments } from '../utils/treatmentsService';
-import { getAllPatients, calculateAge } from '../services/patientService';
+import { getAllPatients, calculateAge, getPatientRadiografias, createPatientRadiografia, deletePatientRadiografia } from '../services/patientService';
 import { appointmentService } from '../services/appointmentService';
-import { Eye, ClipboardList, Calendar, DollarSign, User, Search, Plus, CheckCircle } from 'lucide-react';
+import { Eye, ClipboardList, Calendar, DollarSign, User, Search, Plus, CheckCircle, ImagePlus } from 'lucide-react';
+
+const MAX_RADIOGRAFIA_SIZE_BYTES = 5 * 1024 * 1024;
 
 const ViewPatient = ({ user }) => {
     const [patients, setPatients] = useState([]);
@@ -30,6 +32,18 @@ const ViewPatient = ({ user }) => {
     const [successMessage, setSuccessMessage] = useState('');
     const [appointmentLoading, setAppointmentLoading] = useState(false);
     const [appointmentError, setAppointmentError] = useState('');
+    const [showRadiografiasModal, setShowRadiografiasModal] = useState(false);
+    const [radiografias, setRadiografias] = useState([]);
+    const [radiografiaLoading, setRadiografiaLoading] = useState(false);
+    const [radiografiaError, setRadiografiaError] = useState('');
+    const [savingRadiografia, setSavingRadiografia] = useState(false);
+    const [showRadiografiaForm, setShowRadiografiaForm] = useState(false);
+    const [selectedRadiografiaPreview, setSelectedRadiografiaPreview] = useState(null);
+    const [radiografiaFormData, setRadiografiaFormData] = useState({
+        file: null,
+        descripcion: '',
+        date: new Date().toISOString().split('T')[0]
+    });
 
     const [appointmentFormData, setAppointmentFormData] = useState({
         name: '', date: '', time: '', type: '', dni: '', other_treatment: ''
@@ -80,8 +94,154 @@ const ViewPatient = ({ user }) => {
         return dateString.split('T')[0].split('-').reverse().join('/');
     };
 
+    const getRadiografiaUrl = (storedUrl) => {
+        if (!storedUrl) return '#';
+        if (storedUrl.startsWith('http://') || storedUrl.startsWith('https://')) return storedUrl;
+        const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+        const apiOrigin = apiBase.replace(/\/api\/?$/, '');
+        return `${apiOrigin}${storedUrl}`;
+    };
+
     const handleAppointmentFormChange = (e) => {
         setAppointmentFormData({ ...appointmentFormData, [e.target.name]: e.target.value });
+    };
+
+    const loadPatientRadiografias = async (patientId) => {
+        setRadiografiaLoading(true);
+        setRadiografiaError('');
+        try {
+            const result = await getPatientRadiografias(patientId);
+            if (result.success) {
+                setRadiografias(result.data || []);
+            } else {
+                setRadiografiaError(result.error || 'No se pudieron cargar las radiografías');
+            }
+        } catch (error) {
+            console.error('Error cargando radiografías:', error);
+            setRadiografiaError('No se pudieron cargar las radiografías');
+        } finally {
+            setRadiografiaLoading(false);
+        }
+    };
+
+    const openRadiografiasModal = async (p) => {
+        setSelectedPatient(p);
+        setRadiografias([]);
+        setRadiografiaError('');
+        setRadiografiaFormData({
+            file: null,
+            descripcion: '',
+            date: new Date().toISOString().split('T')[0]
+        });
+        setShowRadiografiaForm(false);
+        setSelectedRadiografiaPreview(null);
+        setShowRadiografiasModal(true);
+        await loadPatientRadiografias(p.id);
+    };
+
+    const handleRadiografiaFormChange = (e) => {
+        const { name, value, files } = e.target;
+        if (name === 'file') {
+            const nextFile = files?.[0] || null;
+            if (nextFile && nextFile.size > MAX_RADIOGRAFIA_SIZE_BYTES) {
+                setRadiografiaError('La imagen no puede superar 5MB');
+                setRadiografiaFormData({ ...radiografiaFormData, file: null });
+                return;
+            }
+            setRadiografiaError('');
+            setRadiografiaFormData({ ...radiografiaFormData, file: nextFile });
+            return;
+        }
+        setRadiografiaFormData({ ...radiografiaFormData, [name]: value });
+    };
+
+    const handleSubmitRadiografia = async (e) => {
+        e.preventDefault();
+        if (!selectedPatient) return;
+        if (!radiografiaFormData.file) {
+            setRadiografiaError('Selecciona una imagen para subir');
+            return;
+        }
+        if (radiografiaFormData.file.size > MAX_RADIOGRAFIA_SIZE_BYTES) {
+            setRadiografiaError('La imagen no puede superar 5MB');
+            return;
+        }
+        setSavingRadiografia(true);
+        setRadiografiaError('');
+        try {
+            const imageData = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error('No se pudo leer la imagen'));
+                reader.readAsDataURL(radiografiaFormData.file);
+            });
+
+            const result = await createPatientRadiografia(selectedPatient.id, {
+                imageData,
+                descripcion: radiografiaFormData.descripcion,
+                date: radiografiaFormData.date
+            });
+            if (result.success) {
+                setRadiografiaFormData({
+                    file: null,
+                    descripcion: '',
+                    date: new Date().toISOString().split('T')[0]
+                });
+                setShowRadiografiaForm(false);
+                await loadPatientRadiografias(selectedPatient.id);
+                setSuccessMessage('Radiografía agregada correctamente');
+                setShowSuccessModal(true);
+                setTimeout(() => setShowSuccessModal(false), 2500);
+            } else {
+                setRadiografiaError(result.error || 'No se pudo guardar la radiografía');
+            }
+        } catch (error) {
+            console.error('Error guardando radiografía:', error);
+            setRadiografiaError('No se pudo guardar la radiografía');
+        } finally {
+            setSavingRadiografia(false);
+        }
+    };
+
+    const handleDownloadRadiografia = async (item) => {
+        try {
+            const fileUrl = getRadiografiaUrl(item.url);
+            const response = await fetch(fileUrl);
+            const blob = await response.blob();
+            const objectUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = objectUrl;
+            link.download = `radiografia-${item.id}-${item.date || 'sin-fecha'}.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(objectUrl);
+        } catch (error) {
+            console.error('Error descargando radiografia:', error);
+            setRadiografiaError('No se pudo descargar la radiografia');
+        }
+    };
+
+    const handleDeleteRadiografia = async (item) => {
+        if (!selectedPatient) return;
+        const confirmDelete = window.confirm('¿Eliminar esta radiografia?');
+        if (!confirmDelete) return;
+
+        try {
+            const result = await deletePatientRadiografia(selectedPatient.id, item.id);
+            if (result.success) {
+                setSelectedRadiografiaPreview(null);
+                await loadPatientRadiografias(selectedPatient.id);
+                setSuccessMessage('Radiografia eliminada correctamente');
+                setShowSuccessModal(true);
+                setTimeout(() => setShowSuccessModal(false), 2500);
+            } else {
+                setRadiografiaError(result.error || 'No se pudo eliminar la radiografia');
+            }
+        } catch (error) {
+            console.error('Error eliminando radiografia:', error);
+            setRadiografiaError('No se pudo eliminar la radiografia');
+        }
     };
 
     const openAppointmentModal = (p) => {
@@ -182,6 +342,7 @@ const ViewPatient = ({ user }) => {
                                                 <button className="action-btn details-btn" title="Detalles" onClick={() => { setSelectedPatient(p); setShowPatientDetails(true); }}><Eye size={18} /></button>
                                                 <button className="action-btn history-btn" title="Historia Clínica" onClick={() => navigate(`/patients/${p.id}/history`)}><ClipboardList size={18} /></button>
                                                 <button className="action-btn appointment-btn" title="Agendar Turno" onClick={() => openAppointmentModal(p)}><Calendar size={18} /></button>
+                                                <button className="action-btn radiografia-btn" title="Radiografías" onClick={() => openRadiografiasModal(p)}><ImagePlus size={18} /></button>
                                                 <button className="action-btn payment-btn" title="Pagos y Cobros" onClick={() => { setSelectedPatient(p); setShowPaymentModal(true); }}><DollarSign size={18} /></button>
                                             </div>
                                         </td>
@@ -306,6 +467,119 @@ const ViewPatient = ({ user }) => {
                         </div>
                     )}
 
+                                        {/* MODAL RADIOGRAFIAS */}
+                    {showRadiografiasModal && selectedPatient && (
+                        <div className="modal-overlay" onClick={() => !savingRadiografia && setShowRadiografiasModal(false)}>
+                            <div className="modal modal-wide radiografia-modal" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h3 className="modal-title">Radiografias - {selectedPatient.name} {selectedPatient.lastname}</h3>
+                                    <button onClick={() => !savingRadiografia && setShowRadiografiasModal(false)} className="close-btn">X</button>
+                                </div>
+                                <div className="modal-content">
+                                    {radiografiaError && (
+                                        <div className="error-message" style={{color: '#d32f2f', padding: '10px', backgroundColor: '#ffebee', borderRadius: '4px', marginBottom: '12px', fontSize: '14px'}}>
+                                            {radiografiaError}
+                                        </div>
+                                    )}
+
+                                    <div className="radiografia-toolbar">
+                                        <button
+                                            type="button"
+                                            className="new-patient-btn"
+                                            onClick={() => setShowRadiografiaForm(prev => !prev)}
+                                            disabled={savingRadiografia}
+                                        >
+                                            <ImagePlus size={16} />
+                                            <span>{showRadiografiaForm ? 'Cancelar' : 'Agregar Radiografia'}</span>
+                                        </button>
+                                    </div>
+
+                                    {showRadiografiaForm && (
+                                        <form onSubmit={handleSubmitRadiografia} className="radiografia-form">
+                                            <div className="form-group">
+                                                <label>Imagen *</label>
+                                                <input type="file" name="file" accept="image/*" onChange={handleRadiografiaFormChange} required className="form-input" disabled={savingRadiografia} />
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Descripcion</label>
+                                                <input type="text" name="descripcion" value={radiografiaFormData.descripcion} onChange={handleRadiografiaFormChange} className="form-input" placeholder="Ej: Panoramica inicial" disabled={savingRadiografia} />
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Fecha *</label>
+                                                <input type="date" name="date" value={radiografiaFormData.date} onChange={handleRadiografiaFormChange} required className="form-input" disabled={savingRadiografia} />
+                                            </div>
+                                            <div className="modal-footer-agenda">
+                                                <button type="submit" className="confirm-agenda-btn" disabled={savingRadiografia}>
+                                                    {savingRadiografia ? 'Guardando...' : 'Guardar Radiografia'}
+                                                </button>
+                                            </div>
+                                        </form>
+                                    )}
+
+                                    <div className="radiografia-list">
+                                        <h4>Radiografias cargadas</h4>
+                                        {radiografiaLoading ? (
+                                            <p>Cargando radiografias...</p>
+                                        ) : radiografias.length === 0 ? (
+                                            <p>No hay radiografias registradas.</p>
+                                        ) : (
+                                            <div className="radiografia-grid">
+                                                {radiografias.map((item) => (
+                                                    <button
+                                                        key={item.id}
+                                                        type="button"
+                                                        className="radiografia-card"
+                                                        onClick={() => setSelectedRadiografiaPreview(item)}
+                                                    >
+                                                        <div className="radiografia-card-date">{formatDate(item.date)}</div>
+                                                        <img src={getRadiografiaUrl(item.url)} alt="Radiografia" className="radiografia-thumb" />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {selectedRadiografiaPreview && (
+                        <div className="modal-overlay" onClick={() => setSelectedRadiografiaPreview(null)}>
+                            <div className="modal radiografia-preview-modal" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h3 className="modal-title">{formatDate(selectedRadiografiaPreview.date)}</h3>
+                                    <button onClick={() => setSelectedRadiografiaPreview(null)} className="close-btn">X</button>
+                                </div>
+                                <div className="modal-content">
+                                    <div className="radiografia-preview-actions">
+                                        <button
+                                            type="button"
+                                            className="confirm-agenda-btn"
+                                            onClick={() => handleDownloadRadiografia(selectedRadiografiaPreview)}
+                                        >
+                                            Descargar
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="radiografia-delete-btn"
+                                            onClick={() => handleDeleteRadiografia(selectedRadiografiaPreview)}
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                    <img
+                                        src={getRadiografiaUrl(selectedRadiografiaPreview.url)}
+                                        alt="Radiografia ampliada"
+                                        className="radiografia-preview-image"
+                                    />
+                                    <p className="radiografia-preview-description">
+                                        {selectedRadiografiaPreview.descripcion || 'Sin descripcion'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {showSuccessModal && (
                         <div className="success-overlay">
                             <div className="success-card">
@@ -322,3 +596,4 @@ const ViewPatient = ({ user }) => {
 };
 
 export default ViewPatient;
+

@@ -14,7 +14,10 @@ const {
   getPatientOdontograma,
   updatePatientOdontograma,
   getOdontogramaVersions,
-  getOdontogramaByVersion
+  getOdontogramaByVersion,
+  getPatientRadiografias,
+  createPatientRadiografia,
+  deletePatientRadiografia
 } = require('../controllers/patients.controller');
 const { authenticateToken } = require('../middlewares/auth');
 
@@ -37,6 +40,9 @@ router.get('/:id/consent', getPatientConsent);
 router.put('/:id/consent', updatePatientConsent);
 router.get('/:id/treatments', getPatientTreatments);
 router.put('/:id/treatments', updatePatientTreatments);
+router.get('/:id/radiografias', getPatientRadiografias);
+router.post('/:id/radiografias', createPatientRadiografia);
+router.delete('/:id/radiografias/:radiografiaId', deletePatientRadiografia);
 router.get('/:id/odontograma', getPatientOdontograma);
 router.put('/:id/odontograma', updatePatientOdontograma);
 router.get('/:id/odontograma/versions', getOdontogramaVersions);
