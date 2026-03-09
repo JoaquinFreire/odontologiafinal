@@ -44,6 +44,7 @@ node_modules\
 
 # 🔹 Entity Framework Migrations
 Migrations/
+uploads/
 
 # 🔹 Local App Data
 appsettings.Development.json

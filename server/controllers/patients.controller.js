@@ -1,4 +1,22 @@
 const pool = require('../config/database');
+const fs = require('fs/promises');
+const path = require('path');
+const crypto = require('crypto');
+const sharp = require('sharp');
+
+const RADIOGRAFIAS_UPLOAD_ROOT = path.join(__dirname, '..', 'uploads', 'radiografias');
+const MAX_RADIOGRAFIA_SIZE_BYTES = 5 * 1024 * 1024;
+
+const parseBase64Image = (imageData) => {
+  if (!imageData || typeof imageData !== 'string') return null;
+  const match = imageData.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+  if (!match) return null;
+
+  return {
+    mimeType: match[1].toLowerCase(),
+    buffer: Buffer.from(match[2], 'base64')
+  };
+};
 
 // Obtener todos los pacientes del usuario con paginación
 const getAllPatients = async (req, res) => {
@@ -732,6 +750,155 @@ const getOdontogramaByVersion = async (req, res) => {
   }
 };
 
+// Obtener radiografias de un paciente
+const getPatientRadiografias = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const patientId = req.params.id;
+
+    const [patients] = await pool.execute(
+      'SELECT id FROM patient WHERE id = ? AND user_id = ?',
+      [patientId, userId]
+    );
+
+    if (patients.length === 0) {
+      return res.status(404).json({ success: false, error: 'Paciente no encontrado' });
+    }
+
+    const [radiografias] = await pool.execute(
+      'SELECT id, url, descripcion, `date`, patient_id FROM radiografias WHERE patient_id = ? ORDER BY `date` DESC, id DESC',
+      [patientId]
+    );
+
+    res.json({ success: true, data: radiografias });
+  } catch (error) {
+    console.error('Error obteniendo radiografias:', error);
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
+  }
+};
+
+// Crear radiografia de un paciente
+const createPatientRadiografia = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const patientId = req.params.id;
+    const { imageData, descripcion, date } = req.body;
+
+    const [patients] = await pool.execute(
+      'SELECT id FROM patient WHERE id = ? AND user_id = ?',
+      [patientId, userId]
+    );
+
+    if (patients.length === 0) {
+      return res.status(404).json({ success: false, error: 'Paciente no encontrado' });
+    }
+
+    if (!date) {
+      return res.status(400).json({ success: false, error: 'La fecha es obligatoria' });
+    }
+
+    const parsedImage = parseBase64Image(imageData);
+    const cleanedDescripcion = descripcion ? String(descripcion).trim() : null;
+    let storedUrl = '';
+
+    if (parsedImage) {
+      if (parsedImage.buffer.length > MAX_RADIOGRAFIA_SIZE_BYTES) {
+        return res.status(400).json({ success: false, error: 'La imagen no puede superar 5MB' });
+      }
+
+      let webpBuffer;
+      try {
+        webpBuffer = await sharp(parsedImage.buffer)
+          .rotate()
+          .webp({ quality: 80 })
+          .toBuffer();
+      } catch (conversionError) {
+        return res.status(400).json({ success: false, error: 'Formato de imagen no soportado' });
+      }
+
+      const generatedFileName = `${Date.now()}-${crypto.randomUUID()}.webp`;
+      const patientFolder = path.join(RADIOGRAFIAS_UPLOAD_ROOT, String(patientId));
+      const filePath = path.join(patientFolder, generatedFileName);
+
+      await fs.mkdir(patientFolder, { recursive: true });
+      await fs.writeFile(filePath, webpBuffer);
+
+      storedUrl = `/uploads/radiografias/${patientId}/${generatedFileName}`;
+    }
+
+    if (!storedUrl) {
+      return res.status(400).json({ success: false, error: 'Debes subir una imagen válida' });
+    }
+
+    const [result] = await pool.execute(
+      'INSERT INTO radiografias (url, descripcion, `date`, patient_id) VALUES (?, ?, ?, ?)',
+      [storedUrl, cleanedDescripcion, date, patientId]
+    );
+
+    res.status(201).json({
+      success: true,
+      data: {
+        id: result.insertId,
+        url: storedUrl,
+        descripcion: cleanedDescripcion,
+        date,
+        patient_id: Number(patientId)
+      }
+    });
+  } catch (error) {
+    console.error('Error creando radiografia:', error);
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
+  }
+};
+// Eliminar radiografia de un paciente
+const deletePatientRadiografia = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const patientId = req.params.id;
+    const radiografiaId = req.params.radiografiaId;
+
+    const [patients] = await pool.execute(
+      'SELECT id FROM patient WHERE id = ? AND user_id = ?',
+      [patientId, userId]
+    );
+
+    if (patients.length === 0) {
+      return res.status(404).json({ success: false, error: 'Paciente no encontrado' });
+    }
+
+    const [radiografias] = await pool.execute(
+      'SELECT id, url FROM radiografias WHERE id = ? AND patient_id = ?',
+      [radiografiaId, patientId]
+    );
+
+    if (radiografias.length === 0) {
+      return res.status(404).json({ success: false, error: 'Radiografia no encontrada' });
+    }
+
+    const radiografia = radiografias[0];
+
+    await pool.execute(
+      'DELETE FROM radiografias WHERE id = ? AND patient_id = ?',
+      [radiografiaId, patientId]
+    );
+
+    if (radiografia.url && radiografia.url.startsWith('/uploads/radiografias/')) {
+      const relativePath = radiografia.url.replace(/^\/+uploads\//, '');
+      const absolutePath = path.join(__dirname, '..', relativePath);
+      const normalizedRoot = path.resolve(path.join(__dirname, '..', 'uploads', 'radiografias'));
+      const normalizedAbsolutePath = path.resolve(absolutePath);
+
+      if (normalizedAbsolutePath.startsWith(normalizedRoot)) {
+        await fs.unlink(normalizedAbsolutePath).catch(() => null);
+      }
+    }
+
+    res.json({ success: true, message: 'Radiografia eliminada correctamente' });
+  } catch (error) {
+    console.error('Error eliminando radiografia:', error);
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
+  }
+};
 // Más funciones según sea necesario...
 
 module.exports = {
@@ -749,5 +916,9 @@ module.exports = {
   getPatientOdontograma,
   updatePatientOdontograma,
   getOdontogramaVersions,
-  getOdontogramaByVersion
+  getOdontogramaByVersion,
+  getPatientRadiografias,
+  createPatientRadiografia,
+  deletePatientRadiografia
 };
+
