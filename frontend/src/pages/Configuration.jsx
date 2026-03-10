@@ -23,6 +23,8 @@ const Configuration = ({ setIsAuthenticated, user, setUser }) => {
   const [treatments, setTreatments] = useState([]);
   const [newTreatmentName, setNewTreatmentName] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [editingTreatment, setEditingTreatment] = useState(null);
+  const [editingValue, setEditingValue] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -74,6 +76,50 @@ const Configuration = ({ setIsAuthenticated, user, setUser }) => {
       setMessageType('success');
       setTimeout(() => setMessage(''), 2000);
     } catch (err) { console.error(err); setMessage('Error eliminando tratamiento'); setMessageType('error'); }
+  };
+
+  const startEditTreatment = (t) => {
+    if (t === 'Otro') {
+      setMessage('No se puede editar el tratamiento "Otro"');
+      setMessageType('error');
+      setTimeout(() => setMessage(''), 2000);
+      return;
+    }
+    setEditingTreatment(t);
+    setEditingValue(t);
+  };
+
+  const cancelEditTreatment = () => {
+    setEditingTreatment(null);
+    setEditingValue('');
+  };
+
+  const saveEditTreatment = async () => {
+    if (!editingTreatment) return;
+    const nextName = editingValue.trim();
+    if (!nextName) {
+      setMessage('Nombre de tratamiento inválido');
+      setMessageType('error');
+      setTimeout(() => setMessage(''), 2000);
+      return;
+    }
+    if (nextName === editingTreatment) {
+      cancelEditTreatment();
+      return;
+    }
+    try {
+      const updated = await treatmentsService.updateTreatment(editingTreatment, nextName);
+      setTreatments(updated);
+      setMessage('Tratamiento actualizado');
+      setMessageType('success');
+      setTimeout(() => setMessage(''), 2000);
+      cancelEditTreatment();
+    } catch (err) {
+      console.error(err);
+      setMessage('Error actualizando tratamiento');
+      setMessageType('error');
+      setTimeout(() => setMessage(''), 2000);
+    }
   };
 
   const openDeleteConfirm = (t) => {
@@ -283,13 +329,55 @@ const Configuration = ({ setIsAuthenticated, user, setUser }) => {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                   {treatments.map(t => (
                     <div key={t} style={{ background: t === 'Otro' ? '#f0fdf4' : '#f3f4f6', padding: '6px 10px', borderRadius: '6px', display: 'flex', gap: '8px', alignItems: 'center', border: t === 'Otro' ? '1px solid #86efac' : 'none' }}>
-                      <span>{t}</span>
-                      {t !== 'Otro' && (
-                        <button 
-                          type="button"
-                          style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }} 
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); openDeleteConfirm(t); }}
-                        >✕</button>
+                      {editingTreatment === t ? (
+                        <>
+                          <input
+                            value={editingValue}
+                            onChange={(e) => setEditingValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') { e.preventDefault(); saveEditTreatment(); }
+                              if (e.key === 'Escape') { e.preventDefault(); cancelEditTreatment(); }
+                            }}
+                            disabled={!!confirmDelete}
+                            style={{ minWidth: '180px' }}
+                          />
+                          <button
+                            type="button"
+                            onClick={saveEditTreatment}
+                            className="btn-save-config btn-save-config2"
+                            disabled={!!confirmDelete}
+                          >
+                            Guardar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={cancelEditTreatment}
+                            style={{ background: 'transparent', border: 'none', color: '#6b7280', cursor: 'pointer' }}
+                            disabled={!!confirmDelete}
+                          >
+                            Cancelar
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <span>{t}</span>
+                          {t !== 'Otro' && (
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                              <button
+                                type="button"
+                                style={{ background: 'transparent', border: 'none', color: '#2563eb', cursor: 'pointer' }}
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); startEditTreatment(t); }}
+                              >
+                                Editar
+                              </button>
+                              <button
+                                type="button"
+                                style={{ background: 'transparent', fontSize: '14px', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); openDeleteConfirm(t); }}
+                              >x</button>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   ))}

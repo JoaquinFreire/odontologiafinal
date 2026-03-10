@@ -4,6 +4,7 @@ const treatmentsCtrl = require('../controllers/treatments.controller');
 
 router.get('/', treatmentsCtrl.getTreatments);
 router.post('/', treatmentsCtrl.addTreatment);
+router.put('/', treatmentsCtrl.updateTreatment);
 router.delete('/', treatmentsCtrl.removeTreatment);
 
 module.exports = router;

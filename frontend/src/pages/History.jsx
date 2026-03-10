@@ -740,6 +740,10 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
         // Guardar datos originales para detectar cambios
         setOriginalData({
           patient: {
+            name: data.patient.name,
+            lastname: data.patient.lastname,
+            dni: data.patient.dni,
+            birthdate: data.patient.birthdate,
             tel: data.patient.tel,
             phone: data.patient.phone || data.patient.tel || '',
             email: data.patient.email,
@@ -850,6 +854,10 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
 
       // Comparar datos del paciente (usar "phone" como campo canónico)
       const normalizedOriginal = {
+        name: originalData.patient.name || '',
+        lastname: originalData.patient.lastname || '',
+        dni: originalData.patient.dni || '',
+        birthDate: originalData.patient.birthdate || '',
         phone: originalData.patient.phone || originalData.patient.tel || '',
         email: originalData.patient.email,
         address: originalData.patient.address,
@@ -859,6 +867,10 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
       };
 
       const normalizedCurrent = {
+        name: patientData.name || '',
+        lastname: patientData.lastname || '',
+        dni: patientData.dni || '',
+        birthDate: patientData.birthDate || '',
         phone: patientData.phone || '',
         email: patientData.email,
         address: patientData.address,
@@ -1007,6 +1019,10 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
       // Actualizar datos originales
       setOriginalData({
         patient: { 
+          name: patientData.name,
+          lastname: patientData.lastname,
+          dni: patientData.dni,
+          birthdate: patientData.birthDate || null,
           tel: patientData.phone, 
           phone: patientData.phone, 
           email: patientData.email, 
@@ -1045,6 +1061,10 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
           setOriginalData(prev => ({
             ...prev,
             patient: {
+              name: patientData.name,
+              lastname: patientData.lastname,
+              dni: patientData.dni,
+              birthdate: patientData.birthDate || null,
               tel: patientData.phone,
               phone: patientData.phone,
               email: patientData.email,
@@ -1126,7 +1146,7 @@ const History = ({ setIsAuthenticated, user, setUser }) => {
             <DatosPersonales
               patientData={patientData}
               setPatientData={setPatientData}
-              readOnlyFields={['name', 'lastname', 'dni', 'birthDate']}
+              showIdentityEditWarning={true}
             />
           </div>
         );

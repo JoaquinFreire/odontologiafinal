@@ -377,6 +377,10 @@ export const updatePatientData = async (patientId, data) => {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify({
+        name: formattedData.name,
+        lastname: formattedData.lastname,
+        dni: data.dni,
+        birthdate: data.birthDate || null,
         tel: formattedData.phone,
         email: formattedData.email,
         address: data.address,

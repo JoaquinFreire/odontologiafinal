@@ -316,6 +316,13 @@
   margin-top: 4px;
 }
 
+.identity-edit-warning {
+  color: #9a6b10;
+  font-size: 12px;
+  font-style: italic;
+  margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .odontograma-container {
@@ -618,6 +625,12 @@ textarea.readonly:focus {
   color: #1565c0;
   font-size: 14px;
   font-weight: 500;
+}
+
+.field-hint {
+  color: #8a8a8a;
+  font-size: 12px;
+  margin-top: 6px;
 }
 
 .version-selector {

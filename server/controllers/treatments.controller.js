@@ -53,3 +53,25 @@ exports.removeTreatment = async (req, res) => {
     res.json({ treatments: updated });
   } catch (err) { res.status(500).json({ error: 'No se pudo eliminar tratamiento' }); }
 };
+
+exports.updateTreatment = async (req, res) => {
+  try {
+    const { name, newName } = req.body;
+    if (!name || typeof name !== 'string') return res.status(400).json({ error: 'Nombre invÃ¡lido' });
+    if (!newName || typeof newName !== 'string') return res.status(400).json({ error: 'Nuevo nombre invÃ¡lido' });
+    if (name === 'Otro') return res.status(400).json({ error: 'No se puede editar el tratamiento "Otro"' });
+
+    const trimmedNew = newName.trim();
+    if (!trimmedNew) return res.status(400).json({ error: 'Nuevo nombre invÃ¡lido' });
+
+    const list = await readTreatments();
+    if (!list.includes(name)) return res.status(404).json({ error: 'Tratamiento no encontrado' });
+    if (trimmedNew !== name && list.includes(trimmedNew)) {
+      return res.status(400).json({ error: 'Ya existe un tratamiento con ese nombre' });
+    }
+
+    const updated = list.map(t => (t === name ? trimmedNew : t));
+    await writeTreatments(updated);
+    res.json({ treatments: updated });
+  } catch (err) { res.status(500).json({ error: 'No se pudo actualizar tratamiento' }); }
+};

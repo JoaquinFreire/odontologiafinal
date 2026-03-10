@@ -111,7 +111,7 @@ const updatePatient = async (req, res) => {
     const updateValues = [];
 
     // Solo permitir actualizar ciertos campos
-    const allowedFields = ['tel', 'email', 'address', 'occupation', 'affiliate_number', 'holder'];
+    const allowedFields = ['name', 'lastname', 'dni', 'birthdate', 'tel', 'email', 'address', 'occupation', 'affiliate_number', 'holder'];
 
     Object.keys(updateData).forEach(key => {
       if (allowedFields.includes(key)) {

@@ -9,7 +9,7 @@ import {
   validatePhone 
 } from '../../validators/formValidators';
 
-const DatosPersonales = ({ patientData, setPatientData, readOnlyFields = [] }) => {
+const DatosPersonales = ({ patientData, setPatientData, readOnlyFields = [], showIdentityEditWarning = false }) => {
   const [errors, setErrors] = useState({});
 
   const handleInputChange = (field, value) => {
@@ -45,7 +45,14 @@ const DatosPersonales = ({ patientData, setPatientData, readOnlyFields = [] }) =
   return (
     <div className="datos-personales-section">
       <div className="section-header">
-        <h3>Datos Personales</h3>
+        <div>
+          <h3>Datos Personales</h3>
+          {showIdentityEditWarning && (
+            <p className="identity-edit-warning">
+              Nota: editar nombre, apellido, DNI o fecha de nacimiento no es recomendado. Use solo si es necesario.
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="datos-form">
