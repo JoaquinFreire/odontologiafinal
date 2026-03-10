@@ -80,3 +80,30 @@ export const removeTreatment = async (treatment) => {
   }
   return getTreatments();
 };
+
+export const updateTreatment = async (currentName, newName) => {
+  if (!currentName || typeof currentName !== 'string') return getTreatments();
+  if (!newName || typeof newName !== 'string') return getTreatments();
+  const trimmedNew = newName.trim();
+  if (!trimmedNew) return getTreatments();
+  try {
+    const res = await fetch(`${API_BASE}/config/treatments`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: currentName, newName: trimmedNew })
+    });
+    if (!res.ok) throw new Error('Server update failed');
+    const json = await res.json();
+    if (Array.isArray(json.treatments)) {
+      saveTreatments(json.treatments);
+      return json.treatments;
+    }
+  } catch (e) {
+    console.warn('updateTreatment server failed, updating localStorage', e);
+    const list = getTreatments();
+    if (currentName === trimmedNew) return list;
+    if (list.includes(trimmedNew)) return list;
+    const updated = list.map(t => (t === currentName ? trimmedNew : t));
+    saveTreatments(updated);
+    return updated;
+  }
+  return getTreatments();
+};

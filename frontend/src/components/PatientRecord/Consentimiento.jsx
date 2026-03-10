@@ -51,6 +51,7 @@ const Consentimiento = ({ patientData, user, consentData, setConsentData, initia
                 readOnly
                 placeholder="Se completa automáticamente"
               />
+              <div className="field-hint">Se toma del DNI cargado en Datos Personales.</div>
             </div>
             <div className="form-group">
               <label htmlFor="consentDate">Fecha y Hora *</label>
